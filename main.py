@@ -1,15 +1,14 @@
 # Blossom
+from dflow import Dflow
 
 class Core:
     def __init__(self, name):
         self.name = name
-        self.history = []
-
-    def update(self):
-        pass
+        self.agent = Dflow(self.name)
 
     def run(self):
-        self.update()
+        while True:
+            print(self.agent.get_response(input("Query: ").lower()))
 
 if __name__ == '__main__':
     core = Core('Blossom')
