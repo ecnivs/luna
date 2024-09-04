@@ -26,5 +26,3 @@ class Dflow:
         self.detected_intent = self.response.query_result.intent.display_name
         self.detected_intent_confidence = self.response.query_result.intent_detection_confidence
         self.fulfillment_text = self.response.query_result.fulfillment_text
-        
-
