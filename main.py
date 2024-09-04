@@ -5,7 +5,7 @@ import subprocess
 class Core:
     def __init__(self, name):
         self.name = name
-        self.agent = Dflow(self.name)
+        self.agent = Dflow(self)
 
     def speak(self, text):
         subprocess.run(['espeak', '-ven+f3', '-s 150', '-p 50', text])
