@@ -16,8 +16,7 @@ class Core:
             self.speak(self.agent.get_response(input("Query: ").lower()))
 
             # for testing
-            print(self.agent.response.query_result.intent_detection_confidence)
-            print(self.agent.response.query_result.intent.display_name)
+            print(f'{self.agent.response.query_result.intent_detection_confidence} {self.agent.response.query_result.intent.display_name}')
 
 if __name__ == '__main__':
     core = Core('Blossom')
