@@ -13,8 +13,8 @@ class Core:
         self.agent = Dflow(self)
         self.model_path = 'vosk-model-small-en-us-0.15'
         self.model = self.load_vosk_model()
-        self.recognizer = KaldiRecognizer(self.model, 16000)
-        self.query = None # shared variable to store recognized speech.
+        self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
+        self.query = None # shared variable to store recognized speech
         self.speech_thread = None
 
     def load_vosk_model(self):
@@ -39,27 +39,31 @@ class Core:
             if self.recognizer.AcceptWaveform(data):
                 result = json.loads(self.recognizer.Result())
                 if 'text' in result and result['text'].strip() != "":
-                    self.query = result['text'].strip() # update shared variable.
+                    self.query = result['text'].strip() # update shared variable
                     print(f'Recognized: {self.query}')
 
     def start_sr_thread(self):
-        # start speech recognition in a seperate thread.
+        # start speech recognition in a seperate thread
         self.speech_thread = threading.Thread(target=self.recognize_speech)
-        self.speech_thread.daemon = True # ensures thread stops when main program exits.
+        self.speech_thread.daemon = True # ensures thread stops when main program exits
         self.speech_thread.start()
 
     def run(self):
-        self.start_sr_thread() # start recognizing speech in background.
+        self.start_sr_thread() # start recognizing speech in background
 
         while True:
-            if self.query: # check if new query is available.
-                self.speak(self.agent.get_response(self.query.lower()))
+            if self.query: # check if new query is available
+                # process the query only if it contains the assistant's name
+                if self.name in self.query.lower():
+                    if not self.query == self.name:
+                        self.query = self.query.lower().replace(self.name, "").strip()
+                    self.speak(self.agent.get_response(self.query))
 
                 # for testing
                 print(f'{self.agent.response.query_result.intent_detection_confidence} {self.agent.response.query_result.intent.display_name}')
 
-                # reset the query so it doesn't get processed multiple times.
-                self.query = None
+            # reset the query so it doesn't get processed multiple times
+            self.query = None
 
 if __name__ == '__main__':
     core = Core('Blossom')
