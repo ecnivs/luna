@@ -53,14 +53,15 @@ class Core:
 
         while True:
             if self.query: # check if new query is available
-                # process the query only if it contains the assistant's name
-                if self.name in self.query.lower():
+                # process new conversations only if it contains the assistant's name
+                if self.name.lower() in self.query.lower() and "Default Fallback Intent" not in self.last_intent:
                     if not self.query == self.name:
                         self.query = self.query.lower().replace(self.name, "").strip()
                     self.speak(self.agent.get_response(self.query))
+                    self.last_intent = self.agent.detected_intent
 
-                # for testing
-                print(f'{self.agent.response.query_result.intent_detection_confidence} {self.agent.response.query_result.intent.display_name}')
+                    # for testing
+                    print(f'{self.agent.response.query_result.intent_detection_confidence} {self.agent.response.query_result.intent.display_name}')
 
             # reset the query so it doesn't get processed multiple times
             self.query = None
