@@ -16,6 +16,8 @@ class Core:
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
         self.query = None # shared variable to store recognized speech
         self.speech_thread = None
+        self.fallback_intent = "Default Fallback Intent"
+        self.last_intent = self.fallback_intent
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
@@ -54,7 +56,8 @@ class Core:
         while True:
             if self.query: # check if new query is available
                 # process new conversations only if it contains the assistant's name
-                if self.name.lower() in self.query.lower() and "Default Fallback Intent" not in self.last_intent:
+                if self.name.lower() in self.query.lower() or self.fallback_intent not in self.last_intent:
+                    print("processing...")
                     if not self.query == self.name:
                         self.query = self.query.lower().replace(self.name, "").strip()
                     self.speak(self.agent.get_response(self.query))
