@@ -26,7 +26,7 @@ class Core:
         return Model(self.model_path)
 
     def speak(self, text):
-        subprocess.run(['espeak', '-ven+f3', '-s 150', '-p 50', text])
+        subprocess.run(['espeak', '-ven+f5', '-s 150', '-p 80', text])
         print(text)
 
     def recognize_speech(self):
