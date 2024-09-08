@@ -13,8 +13,8 @@ This repository is dedicated to the software development of **Blossom**, a human
 
 ## Prerequisites
 * **Python 3.x**
-* Required Python libraries (listed in `requirements.txt`)
-* **Vosk Model**: Download the required Vosk model [HERE.] (https://alphacephei.com/vosk/models)
+* **Required Python libraries** (listed in `requirements.txt`)
+* **Vosk Model**: Download the required [Vosk model](https://alphacephei.com/vosk/models)
 * **Dialogflow Key**
 * **Access to Google Cloud** for Dialogflow setup
 
