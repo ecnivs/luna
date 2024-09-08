@@ -4,18 +4,19 @@
 This repository is dedicated to the software development of Blossom, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
 
 ## Tech Stack
-* Programming Language: Python
-* Speech Recognition: Vosk
-* Natural Language Processing: Google Dialogflow
-* Audio Processing: PyAudio
-* Concurrency: Threading
-* Data Handling: JSON
+* **Programming Language**: Python
+* **Speech Recognition**: Vosk
+* **Natural Language Processing**: Google Dialogflow
+* **Audio Processing**: PyAudio
+* **Concurrency**: Threading
+* **Data Handling**: JSON
 
 ## Prerequisites
-* Python 3.x
-* Vosk Model: Download the required Vosk model. https://alphacephei.com/vosk/models
-* Dialogflow Key
-* Access to Google Cloud
+* **Python 3.x**
+* Required Python libraries (listed in `requirements.txt`)
+* **Vosk Model**: Download the required Vosk model [HERE.] (https://alphacephei.com/vosk/models)
+* **Dialogflow Key**
+* **Access to Google Cloud** for Dialogflow setup
 
 ## Installation
 1. Clone the repository:
