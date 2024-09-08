@@ -1,7 +1,7 @@
 # Blossom (In Development)
 
 ## Overview
-This repository is dedicated to the software development of Blossom, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
+This repository is dedicated to the software development of **Blossom**, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
 
 ## Tech Stack
 * **Programming Language**: Python
