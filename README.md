@@ -12,11 +12,11 @@ This repository is dedicated to the software development of **Blossom**, a human
 * **Data Handling**: JSON
 
 ## Prerequisites
-* **Python 3.x**
-* **Required Python libraries** (listed in `requirements.txt`)
-* **Vosk Model**: Download the required [Vosk model](https://alphacephei.com/vosk/models)
-* **Dialogflow Key**
-* **Access to Google Cloud** for Dialogflow setup
+* Python 3.x
+* Required Python libraries (listed in `requirements.txt`)
+* [Vosk model](https://alphacephei.com/vosk/models)
+* Dialogflow Key
+* Access to Google Cloud for Dialogflow setup
 
 ## Installation
 1. Clone the repository:

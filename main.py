@@ -11,7 +11,7 @@ class Core:
     def __init__(self, name):
         self.name = name
         self.agent = Dflow(self)
-        self.model_path = 'vosk-model-small-en-us-0.15'
+        self.model_path = 'vosk-model'
         self.model = self.load_vosk_model()
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
         self.query = None # shared variable to store recognized speech
