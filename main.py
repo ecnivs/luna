@@ -49,7 +49,7 @@ class Core:
 
     def get_call(self):
         while True:
-            with self.lock:
+            with self.lock: # for thread safety
                 if self.query and all([self.name.lower() in self.query.lower(), 
                                    any(word in self.query.lower() for word in self.call_words)]):
                     self.called = True
@@ -71,12 +71,15 @@ class Core:
 
         while True:
             if self.called:
-                with self.lock:
+                with self.lock: # for thread safety
                     if self.query:
                         print("processing...")
                         self.speak(self.agent.get_response(self.query))
+
+                        # for testing purpose
                         print(f'{self.agent.response.query_result.intent_detection_confidence} '
                             f'{self.agent.response.query_result.intent.display_name}')
+                        
                         self.called = False # reset call flag
                     self.query = None
             
