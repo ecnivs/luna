@@ -4,12 +4,13 @@
 This repository is dedicated to the software development of **Blossom**, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
 
 ## Tech Stack
-* **Programming Language**: Python
-* **Speech Recognition**: Vosk
-* **Natural Language Processing**: Google Dialogflow
-* **Audio Processing**: PyAudio
-* **Concurrency**: Threading
-* **Data Handling**: JSON
+* Programming Language: `Python`
+* Speech Recognition: `Vosk`
+* Text to Speech Synthesis: `Coqui TTS`
+* Natural Language Processing: `Google Dialogflow`
+* Audio Processing: `PyAudio`
+* Concurrency: `Threading`
+* Data Handling: `JSON`
 
 ## Prerequisites
 * Python 3.x
