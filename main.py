@@ -8,7 +8,6 @@ import threading
 from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
-import sounddevice as sd
 import subprocess
 
 class Core:
@@ -32,7 +31,6 @@ class Core:
         return Model(self.model_path)
 
     def speak(self, text):
-        #subprocess.run(['espeak', '-ven+f5', '-s 150', '-p 80', text])
         self.tts.tts_to_file(text,
                 file_path="output.wav",
                 speaker_wav="speaker.wav",
@@ -84,11 +82,6 @@ class Core:
                     if self.query:
                         print("processing...")
                         self.speak(self.agent.get_response(self.query))
-
-                        # for testing purpose
-                        print(f'{self.agent.response.query_result.intent_detection_confidence} '
-                            f'{self.agent.response.query_result.intent.display_name}')
-                        
                         self.called = False # reset call flag
                     self.query = None
             
