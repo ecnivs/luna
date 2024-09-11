@@ -8,7 +8,6 @@ import threading
 from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
-import subprocess
 
 class Core:
     def __init__(self, name):
@@ -31,11 +30,14 @@ class Core:
         return Model(self.model_path)
 
     def speak(self, text):
-        self.tts.tts_to_file(text,
-                file_path="output.wav",
-                speaker_wav="speaker.wav",
-                language="en")
-        subprocess.run(['aplay', 'output.wav'])
+        try:
+            self.tts.tts_to_file(text,
+                    file_path="output.wav",
+                    speaker_wav="speaker.wav",
+                    language="en")
+            subprocess.run(['aplay', 'output.wav'])
+        except Exception as e:
+            print(e)
         print(text)
 
     def recognize_speech(self):
@@ -83,6 +85,7 @@ class Core:
                         print("processing...")
                         self.speak(self.agent.get_response(self.query))
                         self.called = False # reset call flag
+                        print(self.agent.fulfillment_message)
                     self.query = None
             
             time.sleep(0.1) # slight sleep to avoid CPU overload
