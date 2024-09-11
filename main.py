@@ -1,12 +1,15 @@
 # Blossom
 import os
-from dflow import Dflow
 import subprocess
+from dflow import Dflow
 import pyaudio
 import json
 import threading
 from vosk import Model, KaldiRecognizer
 import time
+from TTS.api import TTS
+import sounddevice as sd
+import subprocess
 
 class Core:
     def __init__(self, name):
@@ -17,9 +20,10 @@ class Core:
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
         self.query = None # shared variable to store recognized speech
         self.speech_thread = None
-        self.called = False
+        self.called = False # call flag
         self.call_words = ["hey", "okay", "hi", "yo", "listen", "attention", "are you there"] # define call words
         self.lock = threading.Lock()
+        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
@@ -28,7 +32,12 @@ class Core:
         return Model(self.model_path)
 
     def speak(self, text):
-        subprocess.run(['espeak', '-ven+f5', '-s 150', '-p 80', text])
+        #subprocess.run(['espeak', '-ven+f5', '-s 150', '-p 80', text])
+        self.tts.tts_to_file(text,
+                file_path="output.wav",
+                speaker_wav="speaker.wav",
+                language="en")
+        subprocess.run(['aplay', 'output.wav'])
         print(text)
 
     def recognize_speech(self):
