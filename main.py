@@ -8,6 +8,10 @@ import threading
 from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
+#import logging
+
+# Configure logging
+#logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Core:
     def __init__(self, name):
@@ -22,6 +26,10 @@ class Core:
         self.call_words = ["hey", "okay", "hi", "yo", "listen", "attention", "are you there"] # define call words
         self.lock = threading.Lock()
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
+        self.timeout = 5 # timeout duration
+        self.last_active = time.time() # initialize with current time
+        self.counter = 0
+        self.shutdown_flag = threading.Event()
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
@@ -35,10 +43,12 @@ class Core:
                     file_path="output.wav",
                     speaker_wav="speaker.wav",
                     language="en")
-            subprocess.run(['aplay', 'output.wav'])
+            result = subprocess.run(['aplay', 'output.wav'], capture_output=True)
+            if result.returncode != 0:
+                print(f'Error playing audio with aplay: {result.stderr}')
         except Exception as e:
-            print(e)
-        print(text)
+            print(f'Error in TTS: {e}')
+        print(f'{self.name}: {text}')
 
     def recognize_speech(self):
         p = pyaudio.PyAudio()
@@ -47,23 +57,35 @@ class Core:
 
         print("Listening...")
 
-        while True:
-            data = stream.read(4096, exception_on_overflow=False)
-            if self.recognizer.AcceptWaveform(data):
-                result = json.loads(self.recognizer.Result())
-                if 'text' in result and result['text'].strip() != "":
-                    with self.lock:
-                        self.query = result['text'].strip() # update shared variable
-                    print(f'Recognized: {self.query}')
+        try:
+            while not self.shutdown_flag.is_set():
+                data = stream.read(4096, exception_on_overflow=False)
+                if self.recognizer.AcceptWaveform(data):
+                    result = json.loads(self.recognizer.Result())
+                    if 'text' in result and result['text'].strip() != "":
+                        with self.lock:
+                            self.query = result['text'].strip() # update shared variable
+                        print(f'Recognized: {self.query}')
+        except IOError as e:
+            print(f'IOError in audio stream: {e}')
+        except Exception as e:
+            print(f'Unexpected error in audio stream: {e}')
+        finally:
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+            print("Audio stream terminated.")
 
+    # hotword detection
     def get_call(self):
-        while True:
-            with self.lock: # for thread safety
+        while not self.shutdown_flag.is_set():
+            with self.lock: # ensure thread safety
                 if self.query and all([self.name.lower() in self.query.lower(), 
                                    any(word in self.query.lower() for word in self.call_words)]):
                     self.called = True
                     print("call detected!")
                     self.query = None
+            time.sleep(0.1)
 
     def start_threads(self):
         # start speech recognition in a seperate thread
@@ -78,17 +100,27 @@ class Core:
     def run(self):
         self.start_threads()
 
-        while True:
-            if self.called:
-                with self.lock: # for thread safety
-                    if self.query:
-                        print("processing...")
-                        self.speak(self.agent.get_response(self.query))
-                        self.called = False # reset call flag
-                        print(self.agent.fulfillment_message)
-                    self.query = None
-            
-            time.sleep(0.1) # slight sleep to avoid CPU overload
+        try:
+            while True:
+                if self.called:
+                    with self.lock: # for thread safety
+                        if self.query:
+                            print("processing...")
+                            self.speak(self.agent.get_response(self.query))
+                            self.called = False
+                        self.query = None
+                time.sleep(0.1) # reduce CPU usage
+
+        except KeyboardInterrupt:
+            print("Shutting down...")
+            self.shutdown_flag.set() # signal threads to exit
+
+            # wait for threads to finish
+            if self.speech_thread:
+                self.speech_thread.join()
+            if self.call_thread:
+                self.call_thread.join()
+            print("All threads terminated.")
 
 if __name__ == '__main__':
     core = Core('Blossom')
