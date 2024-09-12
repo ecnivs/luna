@@ -26,16 +26,16 @@ class Core:
         self.call_words = ["hey", "okay", "hi", "yo", "listen", "attention", "are you there"] # define call words
         self.lock = threading.Lock()
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
-        self.timeout = 5 # timeout duration
-        self.last_active = time.time() # initialize with current time
-        self.counter = 0
         self.shutdown_flag = threading.Event()
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
             print(f'Model not found at {self.model_path}, please check the path.')
             exit(1)
-        return Model(self.model_path)
+        try:
+            return Model(self.model_path)
+        except ValueError as e:
+            print(f'Error loading Vosk model: {e}')
 
     def speak(self, text):
         try:
