@@ -8,10 +8,10 @@ import threading
 from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
-#import logging
+import logging
 
 # Configure logging
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, force=True)
 
 class Core:
     def __init__(self, name):
@@ -30,12 +30,12 @@ class Core:
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
-            print(f'Model not found at {self.model_path}, please check the path.')
+            logging.info(f'Model not found at {self.model_path}, please check the path.')
             exit(1)
         try:
             return Model(self.model_path)
         except ValueError as e:
-            print(f'Error loading Vosk model: {e}')
+            logging.error(f'Error loading Vosk model: {e}')
 
     def speak(self, text):
         try:
@@ -45,17 +45,17 @@ class Core:
                     language="en")
             result = subprocess.run(['aplay', 'output.wav'], capture_output=True)
             if result.returncode != 0:
-                print(f'Error playing audio with aplay: {result.stderr}')
+                logging.error(f'Error playing audio with aplay: {result.stderr}')
         except Exception as e:
-            print(f'Error in TTS: {e}')
-        print(f'{self.name}: {text}')
+            logging.error(f'Error in TTS: {e}')
+        logging.info(f'{self.name}: {text}')
 
     def recognize_speech(self):
         p = pyaudio.PyAudio()
         stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=4096)
         stream.start_stream()
 
-        print("Listening...")
+        logging.info("Listening...")
 
         try:
             while not self.shutdown_flag.is_set():
@@ -65,16 +65,17 @@ class Core:
                     if 'text' in result and result['text'].strip() != "":
                         with self.lock:
                             self.query = result['text'].strip() # update shared variable
-                        print(f'Recognized: {self.query}')
+                        logging.info(f'Recognized: {self.query}')
+                time.sleep(0.1)
         except IOError as e:
-            print(f'IOError in audio stream: {e}')
+            logging.error(f'IOError in audio stream: {e}')
         except Exception as e:
-            print(f'Unexpected error in audio stream: {e}')
+            logging.error(f'Unexpected error in audio stream: {e}')
         finally:
             stream.stop_stream()
             stream.close()
             p.terminate()
-            print("Audio stream terminated.")
+            logging.info("Audio stream terminated.")
 
     # hotword detection
     def get_call(self):
@@ -83,7 +84,7 @@ class Core:
                 if self.query and all([self.name.lower() in self.query.lower(), 
                                    any(word in self.query.lower() for word in self.call_words)]):
                     self.called = True
-                    print("call detected!")
+                    logging.info("call detected!")
                     self.query = None
             time.sleep(0.1)
 
@@ -99,20 +100,21 @@ class Core:
 
     def run(self):
         self.start_threads()
+        logging.info("Threads started")
 
         try:
             while True:
                 if self.called:
                     with self.lock: # for thread safety
                         if self.query:
-                            print("processing...")
+                            logging.info("processing...")
                             self.speak(self.agent.get_response(self.query))
                             self.called = False
                         self.query = None
                 time.sleep(0.1) # reduce CPU usage
 
         except KeyboardInterrupt:
-            print("Shutting down...")
+            logging.info("Shutting down...")
             self.shutdown_flag.set() # signal threads to exit
 
             # wait for threads to finish
@@ -120,7 +122,7 @@ class Core:
                 self.speech_thread.join()
             if self.call_thread:
                 self.call_thread.join()
-            print("All threads terminated.")
+            logging.info("All threads terminated.")
 
 if __name__ == '__main__':
     core = Core('Blossom')
