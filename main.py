@@ -92,14 +92,11 @@ class Core:
             p.terminate()
             logging.info("Audio stream terminated.")
 
-    def start_speech_thread(self):
-        # start speech recognition in a seperate thread
+    def run(self):
+        # start speech recognizer on a different thread
         self.speech_thread = threading.Thread(target=self.recognize_speech)
         self.speech_thread.daemon = True # ensures thread stops when main program exits
         self.speech_thread.start()
-
-    def run(self):
-        self.start_speech_thread()
 
         try:
             while True:
