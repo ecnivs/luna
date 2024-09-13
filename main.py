@@ -88,7 +88,7 @@ class Core:
                 if self.query and all([self.name.lower() in self.query.lower(), 
                                    any(word in self.query.lower() for word in self.call_words)]):
                     self.called = True
-                    #self.play_audio("start.wav")
+                    self.play_audio("start.wav")
                     logging.info("call detected!")
                     _, query = self.query.lower().split(self.name.lower(), 1)
                     if query == "" or len(query.split(" ")) < 2:
@@ -115,7 +115,7 @@ class Core:
                     with self.lock: # for thread safety
                         if self.query:
                             logging.info("processing...")
-                            #self.play_audio("end.wav")
+                            self.play_audio("end.wav")
                             self.called = False
                             self.speak(self.agent.get_response(self.query))
                         self.query = None
