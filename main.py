@@ -70,6 +70,17 @@ class Core:
                         with self.lock:
                             self.query = result['text'].strip() # update shared variable
                         logging.info(f'Recognized: {self.query}')
+
+                with self.lock: # ensure thread safety
+                    if self.query and all([self.name.lower() in self.query.lower(), 
+                                       any(word in self.query.lower() for word in self.call_words)]):
+                        self.called = True
+                        logging.info("call detected!")
+                        _, query = self.query.lower().split(self.name.lower(), 1)
+                        if query == "" or len(query.split(" ")) < 2:
+                            self.query = None
+                            self.play_audio("start.wav")
+
                 time.sleep(0.1) # reduce CPU usage
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
@@ -81,33 +92,14 @@ class Core:
             p.terminate()
             logging.info("Audio stream terminated.")
 
-    # hotword detection
-    def get_call(self):
-        while not self.shutdown_flag.is_set():
-            with self.lock: # ensure thread safety
-                if self.query and all([self.name.lower() in self.query.lower(), 
-                                   any(word in self.query.lower() for word in self.call_words)]):
-                    self.called = True
-                    logging.info("call detected!")
-                    _, query = self.query.lower().split(self.name.lower(), 1)
-                    if query == "" or len(query.split(" ")) < 2:
-                        self.query = None
-                        self.play_audio("start.wav")
-            time.sleep(0.1) # reduce CPU usage
-
-    def start_threads(self):
+    def start_speech_thread(self):
         # start speech recognition in a seperate thread
         self.speech_thread = threading.Thread(target=self.recognize_speech)
         self.speech_thread.daemon = True # ensures thread stops when main program exits
         self.speech_thread.start()
 
-        self.call_thread = threading.Thread(target=self.get_call)
-        self.call_thread.daemon = True # ensures thread stops when main program exits
-        self.call_thread.start()
-
     def run(self):
-        self.start_threads()
-        logging.info("Threads started")
+        self.start_speech_thread()
 
         try:
             while True:
@@ -128,8 +120,6 @@ class Core:
             # wait for threads to finish
             if self.speech_thread:
                 self.speech_thread.join()
-            if self.call_thread:
-                self.call_thread.join()
             logging.info("All threads terminated.")
 
 if __name__ == '__main__':
