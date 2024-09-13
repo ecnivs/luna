@@ -21,7 +21,6 @@ class Core:
         self.model = self.load_vosk_model()
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
         self.query = None # shared variable to store recognized speech
-        self.speech_thread = None
         self.called = False # call flag
         self.call_words = ["hey", "okay", "hi", "yo", "listen", "attention", "are you there"] # define call words
         self.lock = threading.Lock()
@@ -66,7 +65,7 @@ class Core:
                         with self.lock:
                             self.query = result['text'].strip() # update shared variable
                         logging.info(f'Recognized: {self.query}')
-                time.sleep(0.1)
+                time.sleep(0.1) # reduce CPU usage
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
         except Exception as e:
@@ -86,7 +85,7 @@ class Core:
                     self.called = True
                     logging.info("call detected!")
                     self.query = None
-            time.sleep(0.1)
+            time.sleep(0.1) # reduce CPU usage
 
     def start_threads(self):
         # start speech recognition in a seperate thread
