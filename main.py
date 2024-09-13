@@ -11,7 +11,9 @@ from TTS.api import TTS
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, force=True)
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(levelname)s - %(message)s',
+                    force=True)
 
 class Core:
     def __init__(self, name):
@@ -39,15 +41,18 @@ class Core:
     def speak(self, text):
         try:
             self.tts.tts_to_file(text,
-                    file_path="output.wav",
-                    speaker_wav="speaker.wav",
+                    file_path="audio/output.wav",
+                    speaker_wav="audio/speaker.wav",
                     language="en")
-            result = subprocess.run(['aplay', 'output.wav'], capture_output=True)
-            if result.returncode != 0:
-                logging.error(f'Error playing audio with aplay: {result.stderr}')
+            self.play_audio("output.wav")
         except Exception as e:
             logging.error(f'Error in TTS: {e}')
         logging.info(f'{self.name}: {text}')
+
+    def play_audio(self, text):
+        result = subprocess.run(['ffplay', '-nodisp', '-autoexit', f'audio/{text}'], capture_output=True)
+        if result.returncode != 0:
+            logging.error(f'Error playing audio with ffplay: {result.stderr}')
 
     def recognize_speech(self):
         p = pyaudio.PyAudio()
@@ -83,8 +88,11 @@ class Core:
                 if self.query and all([self.name.lower() in self.query.lower(), 
                                    any(word in self.query.lower() for word in self.call_words)]):
                     self.called = True
+                    #self.play_audio("start.wav")
                     logging.info("call detected!")
-                    self.query = None
+                    _, query = self.query.lower().split(self.name.lower(), 1)
+                    if query == "" or len(query.split(" ")) < 2:
+                        self.query = None
             time.sleep(0.1) # reduce CPU usage
 
     def start_threads(self):
@@ -107,8 +115,9 @@ class Core:
                     with self.lock: # for thread safety
                         if self.query:
                             logging.info("processing...")
-                            self.speak(self.agent.get_response(self.query))
+                            #self.play_audio("end.wav")
                             self.called = False
+                            self.speak(self.agent.get_response(self.query))
                         self.query = None
                 time.sleep(0.1) # reduce CPU usage
 

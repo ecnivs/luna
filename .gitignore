@@ -1,4 +1,4 @@
 __pycache__/
 key.json
 vosk-model/
-*.wav
+audio/output.wav
