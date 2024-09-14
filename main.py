@@ -28,6 +28,7 @@ class Core:
         self.lock = threading.Lock()
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
         self.shutdown_flag = threading.Event()
+        self.audio = pyaudio.PyAudio()
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
@@ -37,6 +38,7 @@ class Core:
             return Model(self.model_path)
         except ValueError as e:
             logging.error(f'Error loading Vosk model: {e}')
+            exit(1)
 
     def speak(self, text):
         try:
@@ -50,15 +52,21 @@ class Core:
         logging.info(f'{self.name}: {text}')
 
     def play_audio(self, text):
-        result = subprocess.run(['ffplay', '-nodisp', '-autoexit', f'audio/{text}'], capture_output=True)
-        if result.returncode != 0:
-            logging.error(f'Error playing audio with ffplay: {result.stderr}')
+        try:
+            subprocess.Popen(['ffplay', '-nodisp', '-autoexit', f'audio/{text}'], 
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL)
+        except Exception as e:
+            logging.error(f'Error playing audio with ffplay: {e}')
 
     def recognize_speech(self):
-        p = pyaudio.PyAudio()
-        stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=4096)
+        stream = self.audio.open(format=pyaudio.paInt16,
+                        channels=1,
+                        rate=16000,
+                        input=True,
+                        frames_per_buffer=4096)
         stream.start_stream()
-
+        
         logging.info("Listening...")
 
         try:
@@ -71,7 +79,8 @@ class Core:
                             self.query = result['text'].strip() # update shared variable
                         logging.info(f'Recognized: {self.query}')
 
-                with self.lock: # ensure thread safety
+                # hotword detection
+                with self.lock:
                     if self.query and all([self.name.lower() in self.query.lower(), 
                                        any(word in self.query.lower() for word in self.call_words)]):
                         self.called = True
@@ -89,7 +98,7 @@ class Core:
         finally:
             stream.stop_stream()
             stream.close()
-            p.terminate()
+            self.audio.terminate()
             logging.info("Audio stream terminated.")
 
     def run(self):
