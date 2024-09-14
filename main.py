@@ -25,9 +25,9 @@ class Core:
         self.query = None # shared variable to store recognized speech
         self.called = False # call flag
         self.call_words = ["hey", "okay", "hi", "yo", "listen", "attention", "are you there"] # define call words
-        self.lock = threading.Lock()
+        self.lock = threading.Lock() # for thread safety
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
-        self.shutdown_flag = threading.Event()
+        self.shutdown_flag = threading.Event() # event for shutdown flag
         self.audio = pyaudio.PyAudio()
 
     def load_vosk_model(self):
