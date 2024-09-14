@@ -1,7 +1,6 @@
 import os
 import google.cloud.dialogflow as dialogflow
 from google.api_core.exceptions import InvalidArgument
-from datetime import datetime
 
 class Dflow:
     def __init__(self, core):
@@ -9,10 +8,10 @@ class Dflow:
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'key.json'
         self.project_id = 'blossom-jwv9'
         self.language = 'en'
-        self.session_id = f'blossom {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'
+        self.session_id = 'blossom'
         self.session_client = dialogflow.SessionsClient()
         self.session = self.session_client.session_path(self.project_id, self.session_id)
-        
+
     def get_response(self, query):
         self.text_input = dialogflow.TextInput(text=query, language_code=self.language)
         self.query_input = dialogflow.QueryInput(text=self.text_input)
