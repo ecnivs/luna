@@ -2,3 +2,4 @@ __pycache__/
 key.json
 vosk-model/
 audio/output.wav
+.env
