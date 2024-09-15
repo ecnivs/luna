@@ -1,11 +1,11 @@
 # response handler
 from web_utils import Web
-from dflow import Dflow
+from dflow_handler import Agent
 
 class ResponseHandler:
     def __init__(self, core):
         self.web = Web()
-        self.agent = Dflow()
+        self.agent = Agent()
         self.core = core
 
     def handle(self, query):
