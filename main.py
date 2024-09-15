@@ -49,7 +49,6 @@ class Core:
             self.play_audio("output.wav")
         except Exception as e:
             logging.error(f'Error in TTS: {e}')
-        logging.info(f'{self.name}: {text}')
 
     def play_audio(self, text):
         try:
