@@ -1,7 +1,7 @@
 # Blossom
 import os
 import subprocess
-from dflow import Dflow
+from res_handler import ResponseHandler
 import pyaudio
 import json
 import threading
@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 class Core:
     def __init__(self, name):
         self.name = name
-        self.agent = Dflow(self)
+        self.handler = ResponseHandler()
         self.model_path = 'vosk-model'
         self.model = self.load_vosk_model()
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
@@ -115,7 +115,7 @@ class Core:
                             logging.info("processing...")
                             self.play_audio("end.wav")
                             self.called = False
-                            self.speak(self.agent.get_response(self.query))
+                            self.speak(self.handler.handle(self.query))
                         self.query = None
                 time.sleep(0.1) # reduce CPU usage
 
