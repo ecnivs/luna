@@ -19,7 +19,7 @@ class Dflow:
             self.update()
         except InvalidArgument:
             raise
-        return(self.response.query_result.fulfillment_text)
+        #return(self.response.query_result)
         
     def update(self):
         self.query_text = self.response.query_result.query_text

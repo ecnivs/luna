@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 class Core:
     def __init__(self, name):
         self.name = name
-        self.handler = ResponseHandler()
+        self.handler = ResponseHandler(self)
         self.model_path = 'vosk-model'
         self.model = self.load_vosk_model()
         self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate

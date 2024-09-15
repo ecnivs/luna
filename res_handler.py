@@ -3,9 +3,17 @@ from web_utils import Web
 from dflow import Dflow
 
 class ResponseHandler:
-    def __init__(self):
+    def __init__(self, core):
         self.web = Web()
         self.agent = Dflow()
+        self.core = core
 
     def handle(self, query):
-        return self.agent.get_response(query)
+        self.agent.get_response(query)
+        if 'web.search' in self.agent.detected_intent:
+            try:
+                _, query = query.lower().split(self.core.name.lower(), 1)
+            finally:
+                return self.web.search(query)
+        else:
+            return self.agent.fulfillment_text

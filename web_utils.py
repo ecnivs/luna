@@ -20,7 +20,7 @@ class Web:
         self.engine_id = os.getenv('SEARCH_ENGINE_ID')
         self.search_url = 'https://www.googleapis.com/customsearch/v1'
 
-    def google_search(self, query, max_sentences=3):
+    def google_search(self, query, max_sentences=2):
         params = {
             'key': self.api_key,
             'cx': self.engine_id,
@@ -43,7 +43,7 @@ class Web:
             logging.error(f'Search Error: {e}')
             return ""
 
-    def wikipedia_search(self, query, max_sentences=3):
+    def wikipedia_search(self, query, max_sentences=2):
         try:
             summary = wikipedia.summary(query, sentences=max_sentences)
             return summary
@@ -52,12 +52,23 @@ class Web:
         except wikipedia.exceptions.DisambiguationError as e:
             return f"Disambiguation Error: {e.options}"  # Handle disambiguation
 
-    def search(self, query, max_sentences=3):
+    def search(self, query, max_sentences=2):
         # try wikipedia first
         wiki_result = self.wikipedia_search(query, max_sentences=max_sentences)
         if wiki_result is not None:
+
+            # return shorter paragraphs
+            if len(wiki_result) > 250:
+                wiki_result = wiki_result.replace('...', ' ')
+                wiki_result = re.sub(r'\s+', ' ', wiki_result).strip()
+                sentences = wiki_result.split('. ')
+                wiki_result = sentences[0] + '.' if sentences else ''
             return (f'According to Wikipedia, {wiki_result}')
         elif wiki_result is None:
-            return self.google_search(query, max_sentences=max_sentences)
+            result = self.google_search(query, max_sentences=max_sentences)
+            if len(result) > 250:
+                sentences = result.split('. ')
+                result = sentences[0] + '.' if sentences else ''
+            return (f'According to Google, {result}')
         else:
             return("No results found!")
