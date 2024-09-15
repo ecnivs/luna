@@ -18,6 +18,8 @@ This repository is dedicated to the software development of **Blossom**, a human
 * [Vosk model](https://alphacephei.com/vosk/models)
 * Dialogflow Key
 * Access to Google Cloud for Dialogflow setup
+* Google Search Engine ID
+* Google Search API Key
 
 ## Installation
 1. Clone the repository:
