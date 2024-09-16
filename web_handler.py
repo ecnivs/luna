@@ -75,6 +75,8 @@ class Web:
             return None
         except wikipedia.exceptions.DisambiguationError as e:
             return f"Disambiguation Error: {e.options}"
+        except Exception as e:
+            return f"Search Error: {e}"
 
     def search(self, query):
         # Try Wikipedia first
