@@ -80,7 +80,20 @@ class Core:
 
                 # hotword detection
                 with self.lock:
-                    if self.query and all([self.name.lower() in self.query.lower(), 
+
+                    if self.query and all([self.query.lower().split()[0] == (self.name.lower()),
+                                             len(self.query.lower().strip().split()) > 1]):
+                        self.called = True
+                        logging.info("call detected!")
+                        self.query = self.query.replace(self.query.lower().split()[0], "").strip()
+
+                    elif self.query and all([self.query.lower().strip().split()[-1] == self.name.lower(),
+                                             len(self.query.lower().strip().split()) > 1]):
+                        self.query = self.query.replace(self.query.lower().split()[-1], "").strip()
+                        self.called = True
+                        logging.info("call detected!")
+
+                    elif self.query and all([self.name.lower() in self.query.lower(), 
                                        any(word in self.query.lower() for word in self.call_words)]):
                         self.called = True
                         logging.info("call detected!")
