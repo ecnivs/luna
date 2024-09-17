@@ -80,27 +80,36 @@ class Core:
 
                 # hotword detection
                 with self.lock:
+                    if not self.query:
+                        continue
+                    
+                    # lowercase and split
+                    query_lower = self.query.lower().strip()
+                    query_words = query_lower.split()
+                    name_lower = self.name.lower()
 
-                    if self.query and all([self.query.lower().split()[0] == (self.name.lower()),
-                                             len(self.query.lower().strip().split()) > 1]):
+                    if any(word in query_lower for word in self.call_words):
+                        for word in self.call_words:
+                            if f'{word} {name_lower}' in query_lower:
+                                self.called = True
+                                logging.info("call detected!")
+                                _, query = query_lower.split(f'{word} {name_lower}', 1)
+                                if query.strip() == "" or len(query.strip().split()) < 2:
+                                    self.query = None
+                                    self.play_audio("start.wav")
+                                else:
+                                    self.query = query.strip()
+                                break
+
+                    elif query_words[0] == name_lower and len(query_words) > 1:
                         self.called = True
                         logging.info("call detected!")
-                        self.query = self.query.replace(self.query.lower().split()[0], "").strip()
+                        self.query = " ".join(query_words[1:])
 
-                    elif self.query and all([self.query.lower().strip().split()[-1] == self.name.lower(),
-                                             len(self.query.lower().strip().split()) > 1]):
-                        self.query = self.query.replace(self.query.lower().split()[-1], "").strip()
+                    elif query_words[-1] == name_lower and len(query_words) > 1:
                         self.called = True
                         logging.info("call detected!")
-
-                    elif self.query and all([self.name.lower() in self.query.lower(), 
-                                       any(word in self.query.lower() for word in self.call_words)]):
-                        self.called = True
-                        logging.info("call detected!")
-                        _, query = self.query.lower().split(self.name.lower(), 1)
-                        if query == "" or len(query.split(" ")) < 2:
-                            self.query = None
-                            self.play_audio("start.wav")
+                        self.query = " ".join(query_words[:-1])
 
                 time.sleep(0.1) # reduce CPU usage
         except IOError as e:
