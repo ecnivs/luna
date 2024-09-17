@@ -1,11 +1,11 @@
 # response handler
-from web_handler import Web
+from web_handler import WebHandler
 from dflow_handler import Agent
 import spacy
 
 class ResponseHandler:
     def __init__(self, core):
-        self.web = Web()
+        self.web = WebHandler()
         self.agent = Agent()
         self.core = core
         self.nlp = spacy.load("en_core_web_sm")
@@ -18,9 +18,6 @@ class ResponseHandler:
     def handle(self, query):
         self.agent.get_response(query)
         if 'web.search' in self.agent.detected_intent:
-            #try:
-            #    _, query = query.lower().split(self.core.name.lower(), 1)
-            #finally:
             return self.web.search(self.extract_key_phrases(query))
         else:
             return self.agent.fulfillment_text

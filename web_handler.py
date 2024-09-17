@@ -1,10 +1,13 @@
-# Web Handler
+# Web handler
 import os
+import re
 import requests
 import wikipedia
 from dotenv import load_dotenv
 import logging
-import re
+from bs4 import BeautifulSoup
+from transformers import BartTokenizer, BartForConditionalGeneration
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -14,13 +17,17 @@ logging.basicConfig(level=logging.DEBUG,
 # Load environment variables from .env file
 load_dotenv()
 
-class Web:
+class WebHandler:
     def __init__(self):
         self.api_key = os.getenv('GOOGLE_API_KEY')
         self.engine_id = os.getenv('SEARCH_ENGINE_ID')
         self.search_url = 'https://www.googleapis.com/customsearch/v1'
+        
+        # Initialize BART model and tokenizer
+        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+        self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-base')
 
-    def google_search(self, query, max_sentences=3):
+    def google_search(self, query, num_results=5):
         params = {
             'key': self.api_key,
             'cx': self.engine_id,
@@ -30,39 +37,40 @@ class Web:
             response = requests.get(self.search_url, params=params)
             response.raise_for_status()
             results = response.json()
-
-            for item in results.get('items', []):
-                snippet = item.get('snippet')
-                if snippet:
-                    clean_snippet = self.clean_text(snippet)
-                    
-                    if self.is_fragmented(clean_snippet):
-                        continue
-                    
-                    sentences = clean_snippet.split('. ')
-                    limited_paragraph = '. '.join(sentences[:max_sentences]) + '.'
-
-                    if len(limited_paragraph) > 250:
-                        return sentences[0] + '.'
-
-                    return limited_paragraph
-
-            return "No relevant information found."
+            urls = [item['link'] for item in results.get('items', [])[:num_results]]
+            return urls
 
         except requests.exceptions.RequestException as e:
             logging.error(f'Search Error: {e}')
+            return []
+
+    def extract_content_from_url(self, url):
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            paragraphs = soup.find_all('p')
+            content = ' '.join([p.get_text() for p in paragraphs])
+            return content
+        except Exception as e:
+            logging.error(f'Error extracting content from {url}: {e}')
             return ""
 
-    def clean_text(self, text):
-        # Remove common unwanted phrases, dates, and formatting
-        text = re.sub(r'(?i)(learn how|according to|click here|watch)', '', text)
-        text = re.sub(r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b \d{1,2}, \d{4}', '', text)
-        text = text.replace('...', ' ')  # Replace ellipses with a space
-        return re.sub(r'\s+', ' ', text).strip()  # Remove multiple spaces
-
-    def is_fragmented(self, text):
-        # Check if the text starts mid-sentence or is incomplete
-        return text[0].islower()  # Assuming a snippet starting with a lowercase letter is likely fragmented
+    def summarize_with_bart(self, text):
+        inputs = self.tokenizer([text], max_length=1024, return_tensors="pt", truncation=True)
+        summary_ids = self.model.generate(
+            inputs['input_ids'], 
+            max_length=150, 
+            min_length=40, 
+            length_penalty=2.0, 
+            num_beams=4, 
+            early_stopping=True
+        )
+        summary = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    
+        if len(summary) > 250:
+            summary = summary[:250]
+            summary = re.sub(r'([.!?])[^.!?]*$', r'\1', summary)
+        return summary
 
     def wikipedia_search(self, query, max_sentences=2):
         try:
@@ -78,15 +86,30 @@ class Web:
         except Exception as e:
             return f"Search Error: {e}"
 
+    def fetch_and_summarize_url(self, url):
+        content = self.extract_content_from_url(url)
+        if content:
+            return self.summarize_with_bart(content)
+        return ""
+    
     def search(self, query):
-        # Try Wikipedia first
         wiki_result = self.wikipedia_search(query)
         if wiki_result:
             return f"According to Wikipedia, {wiki_result}"
-        
-        # Fall back to Google search if Wikipedia doesn't work
-        google_result = self.google_search(query)
-        if google_result:
-            return google_result
-        
-        return "No results found!"
+    
+        google_urls = self.google_search(query)
+        if not google_urls:
+            return "No results found!"
+
+        summaries = []
+        with ThreadPoolExecutor(max_workers=5) as executor:  # Adjust concurrency as needed
+            future_to_url = {executor.submit(self.fetch_and_summarize_url, url): url for url in google_urls}
+            for future in as_completed(future_to_url):
+                summary = future.result()
+                if summary:
+                    summaries.append(summary)
+    
+        if summaries:
+            return summaries[0]
+    
+        return "No relevant information found from Google search."
