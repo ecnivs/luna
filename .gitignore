@@ -3,3 +3,4 @@ key.json
 vosk-model/
 audio/output.wav
 .env
+test.py
