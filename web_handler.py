@@ -24,20 +24,21 @@ class WebHandler:
         self.search_url = 'https://www.googleapis.com/customsearch/v1'
         
         # Initialize BART model and tokenizer
-        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-        self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-base')
+        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+        self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 
-    def google_search(self, query, num_results=5):
+    def google_search(self, query, num_results=3):
         params = {
             'key': self.api_key,
             'cx': self.engine_id,
-            'q': query
+            'q': query,
+            'num': num_results
         }
         try:
             response = requests.get(self.search_url, params=params)
             response.raise_for_status()
             results = response.json()
-            urls = [item['link'] for item in results.get('items', [])[:num_results]]
+            urls = [item['link'] for item in results.get('items', [])]
             return urls
 
         except requests.exceptions.RequestException as e:
