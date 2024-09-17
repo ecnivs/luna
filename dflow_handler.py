@@ -1,13 +1,14 @@
 import os
 import google.cloud.dialogflow as dialogflow
 from google.api_core.exceptions import InvalidArgument
+import uuid
 
 class Agent:
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'key.json'
         self.project_id = 'blossom-jwv9'
         self.language = 'en'
-        self.session_id = 'blossom'
+        self.session_id = str(uuid.uuid4())
         self.session_client = dialogflow.SessionsClient()
         self.session = self.session_client.session_path(self.project_id, self.session_id)
 
