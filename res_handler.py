@@ -18,6 +18,10 @@ class ResponseHandler:
     def handle(self, query):
         self.agent.get_response(query)
         if 'web.search' in self.agent.detected_intent:
-            return self.web.search(self.extract_key_phrases(query))
+            key_phrases = str(self.extract_key_phrases(query))
+            if not key_phrases.strip() == "":
+                return self.web.search(key_phrases)
+            else:
+                return self.web.search(query)
         else:
             return self.agent.fulfillment_text
