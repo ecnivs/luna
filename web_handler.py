@@ -28,6 +28,7 @@ class WebHandler:
         self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 
     def google_search(self, query, num_results=3):
+        logging.debug(f'Performing Google search for query: {query}')
         params = {
             'key': self.api_key,
             'cx': self.engine_id,
@@ -39,6 +40,7 @@ class WebHandler:
             response.raise_for_status()
             results = response.json()
             urls = [item['link'] for item in results.get('items', [])]
+            logging.debug(f'Google search results: {urls}')
             return urls
 
         except requests.exceptions.RequestException as e:
