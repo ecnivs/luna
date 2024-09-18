@@ -9,6 +9,7 @@ from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
 import logging
+import torch
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -26,7 +27,8 @@ class Core:
         self.called = False # call flag
         self.call_words = ["hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"] # define call words
         self.lock = threading.Lock() # for thread safety
-        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(self.device)
         self.shutdown_flag = threading.Event() # event for shutdown flag
         self.audio = pyaudio.PyAudio()
 
