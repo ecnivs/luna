@@ -10,10 +10,7 @@ This repository is dedicated to the software development of **Blossom**, a human
 * Dialogflow Key
 * Access to Google Cloud for Dialogflow setup
 * Google Search Engine ID
-* Google Search API Key5. Run the Software:
-```bash
-python main.py
-```
+* Google Search API Keys.
 
 ## Installation
 1. Clone the repository:
