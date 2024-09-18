@@ -39,8 +39,8 @@ pip install -r requirements.txt
 2. **Dialogflow**: Obtain and place Dialogflow `key.json` in the directory
 3. **Google Custom Search**: Obtain your Google Search Engine ID and API Key and create `.env` file:
 ```bash
-GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id
-GOOGLE_SEARCH_API_KEY=your_search_api_key
+GOOGLE_SEARCH_ENGINE_ID='your_search_engine_id'
+GOOGLE_SEARCH_API_KEY='your_search_api_key'
 ```
 
 ## Running the Software
