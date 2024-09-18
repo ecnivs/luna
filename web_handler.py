@@ -87,7 +87,7 @@ class WebHandler:
         except wikipedia.exceptions.DisambiguationError as e:
             return f"Disambiguation Error: {e.options}"
         except Exception as e:
-            return f"Search Error: {e}"
+            return None
 
     def fetch_and_summarize_url(self, url):
         content = self.extract_content_from_url(url)
