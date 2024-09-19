@@ -1,6 +1,5 @@
 # Blossom
 import os
-import subprocess
 from res_handler import ResponseHandler
 import pyaudio
 import json
@@ -10,6 +9,7 @@ import time
 from TTS.api import TTS
 import logging
 import torch
+import wave
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -52,13 +52,24 @@ class Core:
         except Exception as e:
             logging.error(f'Error in TTS: {e}')
 
-    def play_audio(self, text):
-        try:
-            subprocess.Popen(['ffplay', '-nodisp', '-autoexit', f'audio/{text}'], 
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL)
-        except Exception as e:
-            logging.error(f'Error playing audio with ffplay: {e}')
+    def play_audio(self, filename):
+        def audio_thread():
+            # audio playback logic
+            wf = wave.open(f'audio/{filename}', 'rb')
+            stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+            chunk_size = 1024
+            data = wf.readframes(chunk_size)
+            while data:
+                stream.write(data)
+                data = wf.readframes(chunk_size)
+            stream.stop_stream()
+            stream.close()
+
+        # Start audio playback in a separate thread
+        threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
         stream = self.audio.open(format=pyaudio.paInt16,
@@ -126,8 +137,7 @@ class Core:
 
     def run(self):
         # start speech recognizer on a different thread
-        self.speech_thread = threading.Thread(target=self.recognize_speech)
-        self.speech_thread.daemon = True # ensures thread stops when main program exits
+        self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)
         self.speech_thread.start()
 
         try:
