@@ -54,19 +54,31 @@ class Core:
 
     def play_audio(self, filename):
         def audio_thread():
-            # audio playback logic
-            wf = wave.open(f'audio/{filename}', 'rb')
-            stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-            chunk_size = 1024
-            data = wf.readframes(chunk_size)
-            while data:
-                stream.write(data)
+            stream = None
+            try:
+                # audio playback logic
+                wf = wave.open(f'audio/{filename}', 'rb')
+                stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                        channels=wf.getnchannels(),
+                        rate=wf.getframerate(),
+                        output=True)
+                chunk_size = 1024
                 data = wf.readframes(chunk_size)
-            stream.stop_stream()
-            stream.close()
+                while data:
+                    stream.write(data)
+                    data = wf.readframes(chunk_size)
+
+            except wave.Error as e:
+                logging.error(f'Error with wave file {filename}: {e}')
+            except IOError as e:
+                logging.error(f'I/O error while playing audio file {filename}: {e}')
+            except Exception as e:
+                logging.error(f'Unexpected error while playing audio file {filename}: {e}')
+            finally:
+                # Ensure resources are cleaned up even if an error occurs
+                if stream and stream.is_active():
+                    stream.stop_stream()
+                    stream.close()
 
         # Start audio playback in a separate thread
         threading.Thread(target=audio_thread, daemon=True).start()
