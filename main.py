@@ -111,6 +111,7 @@ class Core:
                     query_lower = self.query.lower().strip()
                     query_words = query_lower.split()
                     name_lower = self.name.lower()
+
                     # hotword detection
                     if any(word in query_lower for word in self.call_words):
                         for word in self.call_words:
@@ -125,15 +126,16 @@ class Core:
                                     self.query = query.strip()
                                 break
 
-                    elif query_words[0] == name_lower and len(query_words) > 1:
-                        self.called = True
-                        logging.info("call detected!")
-                        self.query = " ".join(query_words[1:])
+                    if self.called is not True:
+                        if query_words[0] == name_lower and len(query_words) > 1:
+                            self.called = True
+                            logging.info("call detected!")
+                            self.query = " ".join(query_words[1:])
 
-                    elif query_words[-1] == name_lower and len(query_words) > 1:
-                        self.called = True
-                        logging.info("call detected!")
-                        self.query = " ".join(query_words[:-1])
+                        elif query_words[-1] == name_lower and len(query_words) > 1:
+                            self.called = True
+                            logging.info("call detected!")
+                            self.query = " ".join(query_words[:-1])
 
                 time.sleep(0.1) # reduce CPU usage
         except IOError as e:

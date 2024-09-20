@@ -16,7 +16,12 @@ class ResponseHandler:
         return phrases
 
     def handle(self, query):
-        self.agent.get_response(query)
+        response = self.agent.get_response(query)
+        
+        # check for timeout
+        if response is not None:
+            return "Request timed out. Please check your internet connection."
+
         if 'web.search' in self.agent.detected_intent:
             key_phrases = str(self.extract_key_phrases(query))
             # ensure key_phrases
