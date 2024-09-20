@@ -19,6 +19,7 @@ class ResponseHandler:
         self.agent.get_response(query)
         if 'web.search' in self.agent.detected_intent:
             key_phrases = str(self.extract_key_phrases(query))
+            # ensure key_phrases
             if not key_phrases.strip() == "":
                 return self.web.search(key_phrases)
             else:

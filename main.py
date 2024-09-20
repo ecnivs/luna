@@ -75,7 +75,7 @@ class Core:
             except Exception as e:
                 logging.error(f'Unexpected error while playing audio file {filename}: {e}')
             finally:
-                # Ensure resources are cleaned up even if an error occurs
+                # Ensure resources are cleaned up
                 if stream and stream.is_active():
                     stream.stop_stream()
                     stream.close()
@@ -103,16 +103,15 @@ class Core:
                             self.query = result['text'].strip() # update shared variable
                         logging.info(f'Recognized: {self.query}')
 
-                # hotword detection
                 with self.lock:
                     if not self.query:
                         continue
-                    
+
                     # lowercase and split
                     query_lower = self.query.lower().strip()
                     query_words = query_lower.split()
                     name_lower = self.name.lower()
-
+                    # hotword detection
                     if any(word in query_lower for word in self.call_words):
                         for word in self.call_words:
                             if f'{word} {name_lower}' in query_lower:
@@ -142,6 +141,7 @@ class Core:
         except Exception as e:
             logging.error(f'Unexpected error in audio stream: {e}')
         finally:
+            # ensure resources are cleaned up
             stream.stop_stream()
             stream.close()
             self.audio.terminate()
@@ -159,7 +159,7 @@ class Core:
                         if self.query:
                             logging.info("processing...")
                             self.play_audio("end.wav")
-                            self.called = False
+                            self.called = False # reset call flag
                             self.speak(self.handler.handle(self.query))
                         self.query = None
                 time.sleep(0.1) # reduce CPU usage
