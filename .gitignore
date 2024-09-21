@@ -5,3 +5,4 @@ audio/output.wav
 .env
 test.py
 .python-version
+cache.json

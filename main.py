@@ -127,12 +127,12 @@ class Core:
                                 break
 
                     if self.called is not True:
-                        if query_words[0] == name_lower and len(query_words) > 1:
+                        if query_words[0] == name_lower and len(query_words) > 2:
                             self.called = True
                             logging.info("call detected!")
                             self.query = " ".join(query_words[1:])
 
-                        elif query_words[-1] == name_lower and len(query_words) > 1:
+                        elif query_words[-1] == name_lower and len(query_words) > 2:
                             self.called = True
                             logging.info("call detected!")
                             self.query = " ".join(query_words[:-1])
@@ -169,6 +169,7 @@ class Core:
         except KeyboardInterrupt:
             logging.info("Shutting down...")
             self.shutdown_flag.set() # signal threads to exit
+            self.handler.save_cache()
 
             # wait for threads to finish
             if self.speech_thread:
