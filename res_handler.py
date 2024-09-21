@@ -61,6 +61,7 @@ class ResponseHandler:
         else:
             response = self.agent.fulfillment_text
         
+        # cache responses
         detected_intent = self.agent.detected_intent
         if detected_intent not in self.cache:
             self.cache[detected_intent] = []
