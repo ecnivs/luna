@@ -1,5 +1,4 @@
 # response handler
-from functools import cache
 from web_handler import WebHandler
 from dflow_handler import Agent
 import spacy
