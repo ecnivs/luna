@@ -1,4 +1,4 @@
-# Blossom (In Development)
+# Blossom
 
 ## Overview
 This repository is dedicated to the software development of **Blossom**, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
