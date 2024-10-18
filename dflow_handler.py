@@ -25,7 +25,7 @@ class Agent:
         except InvalidArgument:
             return "InvalidArgument"
         return None
-        
+
     def update(self):
         self.query_text = self.response.query_result.query_text
         self.detected_intent = self.response.query_result.intent.display_name
