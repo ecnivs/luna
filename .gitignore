@@ -6,3 +6,4 @@ audio/output.wav
 test.py
 .python-version
 cache.json
+.venv/
