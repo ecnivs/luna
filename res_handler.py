@@ -1,5 +1,4 @@
 # response handler
-from web_handler import WebHandler
 from dflow_handler import Agent
 import spacy
 import hashlib
@@ -40,6 +39,7 @@ class ResponseHandler:
     def handle(self, query):
         query_hash = self.hash_query(query)
         agent_response = self.agent.get_response(query)
+        response = None
         
         # check for timeout
         if agent_response is not None:
@@ -57,9 +57,10 @@ class ResponseHandler:
                 response = self.web.search(key_phrases)
             else:
                 response =  self.web.search(query)
-        else:
+
+        if not response:
             response = self.agent.fulfillment_text
-        
+
         # cache responses
         detected_intent = self.agent.detected_intent
         if detected_intent not in self.cache:
