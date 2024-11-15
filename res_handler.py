@@ -1,4 +1,5 @@
 # response handler
+from web_handler import WebHandler
 from dflow_handler import Agent
 import spacy
 import hashlib
