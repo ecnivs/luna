@@ -3,8 +3,6 @@ key.json
 vosk-model/
 audio/output.wav
 .env
-test.py
 .python-version
 cache.json
 .venv/
-*.jpg
