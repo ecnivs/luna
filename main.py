@@ -61,7 +61,7 @@ class Core:
             stream = None
             try:
                 with wave.open(f'audio/{filename}', 'rb') as wf:
-                    chunk_size = 1024
+                    chunk_size = min(1024, wf.getnframes())
                     stream = self.audio.open(
                         format=self.audio.get_format_from_width(wf.getsampwidth()),
                         channels=wf.getnchannels(),
@@ -69,17 +69,9 @@ class Core:
                         output=True,
                         frames_per_buffer=chunk_size)
 
-                    if wf.getnframes() < chunk_size * 4:
-                        data = wf.readframes(wf.getnframes())
-                        stream.write(data)
-                    else:
-                        data = wf.readframes(chunk_size)
-                        while data:
-                            while stream.get_write_available() < len(data):
-                                time.sleep(0.001)
-                            stream.write(data)
-                            data = wf.readframes(chunk_size)
-
+                    data = wf.readframes(wf.getnframes())
+                    stream.write(data)
+                    time.sleep(0.1)
                     stream.stop_stream()
 
             except Exception as e:
