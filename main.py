@@ -59,32 +59,36 @@ class Core:
     def play_audio(self, filename):
         def audio_thread():
             stream = None
-            wf = None
             try:
-                wf = wave.open(f'audio/{filename}', 'rb')
-                stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                with wave.open(f'audio/{filename}', 'rb') as wf:
+                    chunk_size = 1024
+                    stream = self.audio.open(
+                        format=self.audio.get_format_from_width(wf.getsampwidth()),
                         channels=wf.getnchannels(),
                         rate=wf.getframerate(),
-                        output=True)
-                chunk_size = 1024
-                data = wf.readframes(chunk_size)
-                while data:
-                    stream.write(data)
-                    data = wf.readframes(chunk_size)
+                        output=True,
+                        frames_per_buffer=chunk_size)
 
-            except wave.Error as e:
-                logging.error(f'Error with wave file {filename}: {e}')
-            except IOError as e:
-                logging.error(f'I/O error while playing audio file {filename}: {e}')
+                    if wf.getnframes() < chunk_size * 4:
+                        data = wf.readframes(wf.getnframes())
+                        stream.write(data)
+                    else:
+                        data = wf.readframes(chunk_size)
+                        while data:
+                            while stream.get_write_available() < len(data):
+                                time.sleep(0.001)
+                            stream.write(data)
+                            data = wf.readframes(chunk_size)
+                    
+                    stream.stop_stream()
+                    
             except Exception as e:
-                logging.error(f'Unexpected error while playing audio file {filename}: {e}')
+                logging.error(f'Error playing audio file {filename}: {e}')
             finally:
-                if stream:
+                if stream is not None:
                     if stream.is_active():
                         stream.stop_stream()
                     stream.close()
-                if wf:
-                    wf.close()
 
         threading.Thread(target=audio_thread, daemon=True).start()
 
