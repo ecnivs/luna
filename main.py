@@ -79,9 +79,9 @@ class Core:
                                 time.sleep(0.001)
                             stream.write(data)
                             data = wf.readframes(chunk_size)
-                    
+
                     stream.stop_stream()
-                    
+
             except Exception as e:
                 logging.error(f'Error playing audio file {filename}: {e}')
             finally:
