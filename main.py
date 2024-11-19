@@ -19,18 +19,22 @@ logging.basicConfig(level=logging.DEBUG,
 class Core:
     def __init__(self, name):
         self.name = name
-        self.handler = ResponseHandler(self)
         self.model_path = 'vosk-model'
-        self.model = self.load_vosk_model()
-        self.recognizer = KaldiRecognizer(self.model, 16000) # 16 KHz sampling rate
-        self.query = None # shared variable to store recognized speech
-        self.called = False # call flag
-        self.call_words = ["hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"] # define call words
-        self.lock = threading.Lock() # for thread safety
+        self.query = None
+        self.called = False
+        self.call_words = ["hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"]
+
+        self.on_init()
+
+    def on_init(self):
+        self.lock = threading.Lock()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(self.device)
-        self.shutdown_flag = threading.Event() # event for shutdown flag
+        self.shutdown_flag = threading.Event()
         self.audio = pyaudio.PyAudio()
+        self.model = self.load_vosk_model()
+        self.recognizer = KaldiRecognizer(self.model, 16000)
+        self.handler = ResponseHandler(self)
 
     def load_vosk_model(self):
         if not os.path.exists(self.model_path):
@@ -55,8 +59,8 @@ class Core:
     def play_audio(self, filename):
         def audio_thread():
             stream = None
+            wf = None
             try:
-                # audio playback logic
                 wf = wave.open(f'audio/{filename}', 'rb')
                 stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
                         channels=wf.getnchannels(),
@@ -75,12 +79,13 @@ class Core:
             except Exception as e:
                 logging.error(f'Unexpected error while playing audio file {filename}: {e}')
             finally:
-                # Ensure resources are cleaned up
-                if stream and stream.is_active():
-                    stream.stop_stream()
+                if stream:
+                    if stream.is_active():
+                        stream.stop_stream()
                     stream.close()
+                if wf:
+                    wf.close()
 
-        # Start audio playback in a separate thread
         threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
