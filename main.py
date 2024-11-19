@@ -142,41 +142,38 @@ class Core:
                             logging.info("call detected!")
                             self.query = " ".join(query_words[:-1])
 
-                time.sleep(0.1) # reduce CPU usage
+                time.sleep(0.1)
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
         except Exception as e:
             logging.error(f'Unexpected error in audio stream: {e}')
         finally:
-            # ensure resources are cleaned up
             stream.stop_stream()
             stream.close()
             self.audio.terminate()
             logging.info("Audio stream terminated.")
 
     def run(self):
-        # start speech recognizer on a different thread
         self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)
         self.speech_thread.start()
 
         try:
             while True:
                 if self.called:
-                    with self.lock: # for thread safety
+                    with self.lock:
                         if self.query:
                             logging.info("processing...")
                             self.play_audio("end.wav")
                             self.called = False # reset call flag
                             self.speak(self.handler.handle(self.query))
                         self.query = None
-                time.sleep(0.1) # reduce CPU usage
+                time.sleep(0.1)
 
         except KeyboardInterrupt:
             logging.info("Shutting down...")
-            self.shutdown_flag.set() # signal threads to exit
+            self.shutdown_flag.set()
             self.handler.save_cache()
 
-            # wait for threads to finish
             if self.speech_thread:
                 self.speech_thread.join()
             logging.info("All threads terminated.")
