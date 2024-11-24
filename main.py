@@ -91,7 +91,7 @@ class Core:
                         input=True,
                         frames_per_buffer=4096)
         stream.start_stream()
-        
+
         logging.info("Listening...")
 
         try:
