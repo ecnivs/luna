@@ -41,7 +41,7 @@ class ResponseHandler:
         query_hash = self.hash_query(query)
         agent_response = self.agent.get_response(query)
         response = None
-        
+
         # check for timeout
         if agent_response is not None:
             if query_hash in self.cache:

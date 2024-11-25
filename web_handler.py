@@ -22,7 +22,7 @@ class WebHandler:
         self.api_key = os.getenv('GOOGLE_API_KEY')
         self.engine_id = os.getenv('SEARCH_ENGINE_ID')
         self.search_url = 'https://www.googleapis.com/customsearch/v1'
-        
+
         # Initialize BART model and tokenizer
         self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
         self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
@@ -69,7 +69,7 @@ class WebHandler:
             early_stopping=True
         )
         summary = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    
+
         if len(summary) > 250:
             summary = summary[:250]
             summary = re.sub(r'([.!?])[^.!?]*$', r'\1', summary)
@@ -94,12 +94,12 @@ class WebHandler:
         if content:
             return self.summarize_with_bart(content)
         return ""
-    
+
     def search(self, query):
         wiki_result = self.wikipedia_search(query)
         if wiki_result:
             return f"According to Wikipedia, {wiki_result}"
-    
+
         google_urls = self.google_search(query)
         if not google_urls:
             return "No results found!"
@@ -111,8 +111,8 @@ class WebHandler:
                 summary = future.result()
                 if summary:
                     summaries.append(summary)
-    
+
         if summaries:
             return summaries[0]
-    
+
         return "No relevant information found from Google search."
