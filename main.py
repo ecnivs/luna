@@ -75,7 +75,7 @@ class Core:
                     stream.stop_stream()
 
             except Exception as e:
-                logging.error(f'Error playing audio file {filename}: {e}')
+                logging.error(f'Error during playback of {filename}: {e}')
             finally:
                 if stream is not None:
                     if stream.is_active():
