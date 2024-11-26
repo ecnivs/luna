@@ -12,7 +12,7 @@ import torch
 import wave
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, 
+logging.basicConfig(level=logging.DEBUG,
                     format='%(levelname)s - %(message)s',
                     force=True)
 
