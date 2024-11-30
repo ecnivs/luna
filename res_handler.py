@@ -1,6 +1,6 @@
 # response handler
 from web_handler import WebHandler
-from dflow_handler import Agent
+from dialogflow_handler import Agent
 import spacy
 import hashlib
 import json
@@ -10,7 +10,7 @@ import random
 class ResponseHandler:
     def __init__(self, core):
         self.web = WebHandler()
-        self.agent = Agent()
+        self.agent = Agent('key.json', 'blossom-jwv9')
         self.core = core
         self.nlp = spacy.load("en_core_web_sm")
         self.cache_file = "cache.json"
