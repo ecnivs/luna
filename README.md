@@ -30,6 +30,10 @@ pyenv local 3.11
 ```bash
 pip install -r requirements.txt
 ```
+5. Run the Software:
+```bash
+python main.py
+```
 
 ## Configuration
 1. **Vosk Model**: Download and place `Vosk-model` in the directory.
@@ -40,9 +44,12 @@ GOOGLE_SEARCH_ENGINE_ID='your_search_engine_id'
 GOOGLE_SEARCH_API_KEY='your_search_api_key'
 ```
 
-## Running the Software
-```bash
-python main.py
-```
+## Contributing
+We appreciate any feedback or code reviews! Feel free to:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Submit a pull request
 
 ### I'd appreciate any feedback or code reviews you might have!
