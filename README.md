@@ -1,7 +1,8 @@
 # Blossom
 
 ## Overview
-This repository is dedicated to the software development of **Blossom**, a humanoid robot. The project aims to integrate real-time control, object detection, and voice interaction capabilities.
+This repository is dedicated to the software development of **Blossom**, a virtual assistant designed to provide real-time interaction, task automation, and intelligent voice communication.
+The project focuses on delivering a seamless and responsive user experience.
 
 ## Prerequisites
 * Python 3.x (Tested with Python 3.11 using pyenv)
