@@ -1,7 +1,7 @@
 # Blossom
 
 ## Overview
-This repository is dedicated to the software development of **Blossom**. The project focuses on delivering a seamless and responsive user experience.
+This repository is dedicated to the software development of **Blossom**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
 
 ## Prerequisites
 * Python 3.x (Tested with Python 3.11 using pyenv)
