@@ -45,10 +45,7 @@ ollama run llama2-uncensored
 
 ## Contributing
 We appreciate any feedback or code reviews! Feel free to:
-1. Fork the repository```bash
-GOOGLE_SEARCH_ENGINE_ID='your_search_engine_id'
-GOOGLE_SEARCH_API_KEY='your_search_api_key'
-```
+1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
