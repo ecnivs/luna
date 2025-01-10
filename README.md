@@ -7,8 +7,6 @@ This repository is dedicated to the software development of **Blossom**, a virtu
 * Python 3.x (Tested with Python 3.11 using pyenv)
 * Required Python libraries (listed in `requirements.txt`)
 * [Vosk model](https://alphacephei.com/vosk/models)
-* Dialogflow Key
-* Access to Google Cloud for Dialogflow setup
 * [Ollama](https://ollama.com/)
 * [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
 
@@ -30,17 +28,13 @@ pyenv local 3.11
 ```bash
 pip install -r requirements.txt
 ```
-5. Run the Software:
-```bash
-python main.py
-```
-
-## Configuration
-1. **Vosk Model**: Download and place `Vosk-model` in the directory.
-2. **Dialogflow**: Obtain and place Dialogflow `key.json` in the directory
-3. **LLM**: Download an LLM using Ollama:
+5. Download an LLM:
 ```bash
 ollama pull llama2-uncensored
+```
+6. Run the Software:
+```bash
+python main.py
 ```
 
 ## Contributing

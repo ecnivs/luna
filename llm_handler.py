@@ -11,6 +11,11 @@ class LlmHandler:
     def __init__(self, core):
         self.name = core.name
         self.check_service()
+        self.get_prompt()
+
+    def get_prompt(self):
+        with open('.prompt.txt', 'r') as file:
+            self.prompt = file.read()
 
     def check_service(self):
         try:
@@ -30,7 +35,7 @@ class LlmHandler:
             "model": "llama2-uncensored",
             "prompt": f"{query}",
             "stream": False,
-            "system": f"Your name is {self.name}"
+            "system": f"{self.prompt}"
         }
         response = requests.post("http://localhost:11434/api/generate", json=data)
         return (response.json()["response"])
