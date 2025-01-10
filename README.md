@@ -40,7 +40,7 @@ python main.py
 2. **Dialogflow**: Obtain and place Dialogflow `key.json` in the directory
 3. **LLM**: Download an LLM using Ollama:
 ```bash
-ollama run llama2-uncensored
+ollama pull llama2-uncensored
 ```
 
 ## Contributing
