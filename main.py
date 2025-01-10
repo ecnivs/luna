@@ -22,7 +22,7 @@ class Core:
         self.model_path = 'vosk-model'
         self.query = None
         self.called = False
-        self.call_words = ["hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"]
+        self.call_words = ["he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"]
 
         self.on_init()
 
