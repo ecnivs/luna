@@ -175,5 +175,5 @@ class Core:
             logging.info("All threads terminated.")
 
 if __name__ == '__main__':
-    core = Core('Blossom')
+    core = Core('June')
     core.run()
