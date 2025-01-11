@@ -1,6 +1,7 @@
 google-cloud-dialogflow
 google-api-core
 requests
+nltk
 transformers
 torch
 pyaudio

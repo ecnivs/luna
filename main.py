@@ -168,6 +168,7 @@ class Core:
         except KeyboardInterrupt:
             logging.info("Shutting down...")
             self.shutdown_flag.set()
+            self.handler.save_cache()
 
             if self.speech_thread:
                 self.speech_thread.join()

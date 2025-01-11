@@ -1,6 +1,5 @@
 import requests
 import logging
-import subprocess
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -10,25 +9,21 @@ logging.basicConfig(level=logging.DEBUG,
 class LlmHandler:
     def __init__(self, core):
         self.name = core.name
-        self.check_service()
+        self.context = []
         self.get_prompt()
 
     def get_prompt(self):
-        with open('.prompt.txt', 'r') as file:
-            self.prompt = file.read()
-
-    def check_service(self):
         try:
-            result = subprocess.run(['systemctl', 'is-active', '--quiet', 'ollama.service'])
-            if result.returncode != 0:
-                subprocess.run(['sudo', 'systemctl', 'start', 'ollama.service'], check=True)
-                logging.info("ollama.service started.")
-            else:
-                logging.info("ollama.service is already running.")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to start ollama.service: {e}")
-        except Exception as e:
-            logging.error(e)
+            with open('.prompt.txt', 'r') as file:
+                self.prompt = file.read()
+        except FileNotFoundError:
+            default = f"You are a female AI Assistant named {self.name}"
+            with open('.prompt.txt', 'w') as file:
+                file.write(default)
+            logging.error("'.prompt.txt' not found. Creating new one.")
+
+    def add_to_context(self, role, content):
+        self.context.append({"role": role, "content": content})
 
     def get_response(self, query):
         data = {
