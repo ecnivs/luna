@@ -39,9 +39,11 @@ class ResponseHandler:
         query = re.sub(r'[^a-zA-Z\s]', '', query.lower())
         words = query.split()
         filtered_words = [self.stemmer.stem(word) for word in words if word not in stop_words]
-
         word_counts = Counter(filtered_words)
-        return list(word_counts.keys())[:3]
+        result = list(word_counts.keys())
+        if result and result[0] == "tell":
+            result.pop(0)
+        return result
 
     def handle(self, query):
         query_hash = self.hash_query(query)

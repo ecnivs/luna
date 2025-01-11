@@ -5,3 +5,4 @@ audio/output.wav
 .python-version
 .venv/
 *.txt
+test.py
