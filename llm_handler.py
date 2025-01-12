@@ -17,7 +17,7 @@ class LlmHandler:
             with open('.prompt.txt', 'r') as file:
                 self.prompt = file.read()
         except FileNotFoundError:
-            default = f"You are a female AI Assistant named {self.name}"
+            default = f"You are an AI Assistant named {self.name}"
             with open('.prompt.txt', 'w') as file:
                 file.write(default)
             logging.error("'.prompt.txt' not found. Creating new one.")
@@ -30,6 +30,7 @@ class LlmHandler:
             "model": "llama2-uncensored",
             "prompt": f"{query}",
             "stream": False,
+            "context": [1, 2, 3],
             "system": f"{self.prompt}"
         }
         response = requests.post("http://localhost:11434/api/generate", json=data)

@@ -4,16 +4,15 @@ from collections import Counter
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from llm_handler import LlmHandler
-from dialogflow_handler import Agent
 import hashlib
 import json
 import os
 import random
+import threading
 
 class ResponseHandler:
     def __init__(self, core):
         self.handler = LlmHandler(core)
-        self.agent = Agent('key.json', 'blossom-jwv9')
         self.cache_file = "cache.json"
         self.cache = self.load_cache()
         self.stemmer = PorterStemmer()
@@ -39,46 +38,33 @@ class ResponseHandler:
         words = re.sub(r'[^a-zA-Z\s]', '', query.lower()).split()
         word_counts = Counter([self.stemmer.stem(word) for word in words if word not in stop_words])
         result = list(word_counts.keys())
-        if result and result[0] in ("tell", "say", "find", "search", "look"):
+        if result and result[0] in ("tell", "say", "find", "search", "look", "oh"):
             result.pop(0)
         return result
 
+    def add_response(self, query, query_hash, intent):
+        response = self.handler.get_response(query).strip().lower()
+        if response not in self.cache[intent]:
+            self.cache[intent].append(response)
+        self.cache[query_hash] = {
+            'intent': intent
+        }
+
     def handle(self, query):
         query_hash = self.hash_query(query)
-        agent_response = self.agent.get_response(query)
         response = None
 
-        # check for timeout
-        if agent_response is not None:
-            if query_hash in self.cache:
-                detected_intent = self.cache[query_hash]['intent']
-                cached_responses = self.cache[detected_intent]
-                if cached_responses:
-                    return f'{random.choice(cached_responses)}'
-            return self.handler.get_response(query)
+        if query_hash in self.cache:
+            detected_intent = self.cache[query_hash]['intent']
+            cached_responses = self.cache[detected_intent]
+            if len(cached_responses) > 2:
+                threading.Thread(target=self.add_response, args=(query, query_hash, detected_intent)).start()
+                return f'{random.choice(cached_responses)}'
 
-        detected_intent = self.agent.detected_intent
-        if not response:
-            if detected_intent in ('web.search', 'Default Fallback Intent'):
-                response = self.handler.get_response(query)
-            else:
-                response = self.agent.fulfillment_text
+        response = self.handler.get_response(query).strip().lower()
+        intent_name = '.'.join(self.extract_key_phrases(query))
 
-        # cache responses
-        if detected_intent not in ('web.search', 'Default Fallback Intent'):
-            if detected_intent not in self.cache:
-                self.cache[detected_intent] = []
-
-            if response not in self.cache[detected_intent]:
-                self.cache[detected_intent].append(response)
-
-            self.cache[query_hash] = {
-                'intent': detected_intent
-            }
-        elif detected_intent == 'web.search':
-            key_phrases = self.extract_key_phrases(query)
-            intent_name = 'web.search.'+'.'.join(key_phrases)
-
+        if 'repeat' not in intent_name:
             if intent_name not in self.cache:
                 self.cache[intent_name] = []
             if response not in self.cache[intent_name]:
@@ -87,3 +73,4 @@ class ResponseHandler:
                 'intent': intent_name
             }
         return response
+
