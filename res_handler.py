@@ -36,12 +36,10 @@ class ResponseHandler:
 
     def extract_key_phrases(self, query):
         stop_words = set(stopwords.words('english'))
-        query = re.sub(r'[^a-zA-Z\s]', '', query.lower())
-        words = query.split()
-        filtered_words = [self.stemmer.stem(word) for word in words if word not in stop_words]
-        word_counts = Counter(filtered_words)
+        words = re.sub(r'[^a-zA-Z\s]', '', query.lower()).split()
+        word_counts = Counter([self.stemmer.stem(word) for word in words if word not in stop_words])
         result = list(word_counts.keys())
-        if result and result[0] == "tell":
+        if result and result[0] in ("tell", "say", "find", "search", "look"):
             result.pop(0)
         return result
 
