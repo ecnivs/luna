@@ -6,9 +6,9 @@ This repository is dedicated to the software development of **Blossom**, a virtu
 ## Prerequisites
 * Python 3.x (Tested with Python 3.11 using pyenv)
 * Required Python libraries (listed in `requirements.txt`)
-* [Vosk model](https://alphacephei.com/vosk/models)
-* [Ollama](https://ollama.com/)
 * [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
+* [Ollama](https://ollama.com/)
+* [Vosk model](https://alphacephei.com/vosk/models)
 
 ## Installation
 1. Clone the repository:
