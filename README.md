@@ -9,8 +9,6 @@ This repository is dedicated to the software development of **Blossom**, a virtu
 * [Vosk model](https://alphacephei.com/vosk/models)
 * [Ollama](https://ollama.com/)
 * [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
-* Dialogflow Key
-* Access to Google Cloud for Dialogflow setup
 
 ## Installation
 1. Clone the repository:
@@ -40,8 +38,11 @@ python main.py
 ```
 
 ## Configuration
-1. **Vosk Model**: Download and place `Vosk-model` in the directory.
-2. **Dialogflow**: Obtain and place Dialogflow `key.json` in the directory
+1. **Vosk Model**: Download and place `vosk-model` in the directory.
+2. **Ollama**: Enable Ollama
+```bash
+sudo systemctl enable ollama
+```
 
 ## Contributing
 We appreciate any feedback or code reviews! Feel free to:
