@@ -38,6 +38,8 @@ class ResponseHandler:
         words = re.sub(r'[^a-zA-Z\s]', '', query.lower()).split()
         word_counts = Counter([self.stemmer.stem(word) for word in words if word not in stop_words])
         result = list(word_counts.keys())
+        if not result:
+            return query.split()
         if result and result[0] in ("tell", "say", "find", "search", "look"):
             result.pop(0)
         return result
