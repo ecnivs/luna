@@ -92,6 +92,7 @@ class Core:
                         frames_per_buffer=4096)
         stream.start_stream()
 
+        self.speak(self.handler.handler.get_response(f"Hey {self.name}"))
         logging.info("Listening...")
 
         try:
@@ -169,6 +170,7 @@ class Core:
             logging.info("Shutting down...")
             self.shutdown_flag.set()
             self.handler.save_cache()
+            self.handler.handler.unload_model()
 
             if self.speech_thread:
                 self.speech_thread.join()
