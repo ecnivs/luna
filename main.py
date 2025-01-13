@@ -1,13 +1,10 @@
 # Blossom
-import os
 from res_handler import ResponseHandler
+from settings import *
 import pyaudio
-import json
-import threading
 from vosk import Model, KaldiRecognizer
 import time
 from TTS.api import TTS
-import logging
 import torch
 import wave
 
@@ -17,31 +14,30 @@ logging.basicConfig(level=logging.DEBUG,
                     force=True)
 
 class Core:
-    def __init__(self, name):
-        self.name = name
-        self.model_path = 'vosk-model'
+    def __init__(self):
+        self.name = NAME
+        self.model = VOSK_MODEL
         self.query = None
         self.called = False
-        self.call_words = ["he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"]
 
         self.on_init()
 
     def on_init(self):
         self.lock = threading.Lock()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(self.device)
+        self.tts = TTS(model_name=TTS_MODEL).to(self.device)
         self.shutdown_flag = threading.Event()
         self.audio = pyaudio.PyAudio()
         self.model = self.load_vosk_model()
-        self.recognizer = KaldiRecognizer(self.model, 16000)
-        self.handler = ResponseHandler(self)
+        self.recognizer = KaldiRecognizer(self.model, SAMPLING_RATE)
+        self.handler = ResponseHandler()
 
     def load_vosk_model(self):
-        if not os.path.exists(self.model_path):
-            logging.info(f'Model not found at {self.model_path}, please check the path.')
+        if not os.path.exists(self.model):
+            logging.info(f'Model not found at {self.model}, please check the path.')
             exit(1)
         try:
-            return Model(self.model_path)
+            return Model(self.model)
         except ValueError as e:
             logging.error(f'Error loading Vosk model: {e}')
             exit(1)
@@ -49,10 +45,10 @@ class Core:
     def speak(self, text):
         try:
             self.tts.tts_to_file(text,
-                    file_path="audio/output.wav",
-                    speaker_wav="audio/speaker.wav",
+                    file_path = OUTPUT_WAV,
+                    speaker_wav = SPEAKER_WAV,
                     language="en")
-            self.play_audio("output.wav")
+            self.play_audio(OUTPUT_WAV)
         except Exception as e:
             logging.error(f'Error in TTS: {e}')
 
@@ -60,8 +56,8 @@ class Core:
         def audio_thread():
             stream = None
             try:
-                with wave.open(f'audio/{filename}', 'rb') as wf:
-                    chunk_size = min(1024, wf.getnframes())
+                with wave.open(filename, 'rb') as wf:
+                    chunk_size = min(MIN_CHUNK_SIZE, wf.getnframes())
                     stream = self.audio.open(
                         format=self.audio.get_format_from_width(wf.getsampwidth()),
                         channels=wf.getnchannels(),
@@ -86,10 +82,10 @@ class Core:
 
     def recognize_speech(self):
         stream = self.audio.open(format=pyaudio.paInt16,
-                        channels=1,
-                        rate=16000,
-                        input=True,
-                        frames_per_buffer=4096)
+                        channels = 1,
+                        rate = RATE,
+                        input = True,
+                        frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
         self.speak(self.handler.handler.get_response(f"Hey {self.name}"))
@@ -97,12 +93,12 @@ class Core:
 
         try:
             while not self.shutdown_flag.is_set():
-                data = stream.read(4096, exception_on_overflow=False)
+                data = stream.read(FRAMES_PER_BUFFER, exception_on_overflow=EXCEPTION_ON_OVERFLOW)
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     if 'text' in result and result['text'].strip() != "":
                         with self.lock:
-                            self.query = result['text'].strip() # update shared variable
+                            self.query = result['text'].strip()
                         logging.info(f'Recognized: {self.query}')
 
                 with self.lock:
@@ -115,15 +111,15 @@ class Core:
                     name_lower = self.name.lower()
 
                     # hotword detection
-                    if any(word in query_lower for word in self.call_words):
-                        for word in self.call_words:
+                    if any(word in query_lower for word in CALL_WORDS):
+                        for word in CALL_WORDS:
                             if f'{word} {name_lower}' in query_lower:
                                 self.called = True
                                 logging.info("call detected!")
                                 _, query = query_lower.split(f'{word} {name_lower}', 1)
                                 if query.strip() == "" or len(query.strip().split()) < 2:
                                     self.query = None
-                                    self.play_audio("start.wav")
+                                    self.play_audio(START_WAV)
                                 else:
                                     self.query = query.strip()
                                 break
@@ -160,8 +156,8 @@ class Core:
                     with self.lock:
                         if self.query:
                             logging.info("processing...")
-                            self.play_audio("end.wav")
-                            self.called = False # reset call flag
+                            self.play_audio(END_WAV)
+                            self.called = False
                             self.speak(self.handler.handle(self.query))
                         self.query = None
                 time.sleep(0.1)
@@ -177,5 +173,5 @@ class Core:
             logging.info("All threads terminated.")
 
 if __name__ == '__main__':
-    core = Core('Blossom')
+    core = Core()
     core.run()

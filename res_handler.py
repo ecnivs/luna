@@ -1,19 +1,17 @@
-# response handler
+# Response Handler
 import re
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from llm_handler import LlmHandler
+from settings import *
 import hashlib
-import json
-import os
 import random
-import threading
 
 class ResponseHandler:
-    def __init__(self, core):
-        self.handler = LlmHandler(core)
-        self.cache_file = "cache.json"
+    def __init__(self):
+        self.handler = LlmHandler()
+        self.cache_file = CACHE_FILE
         self.cache = self.load_cache()
         self.stemmer = PorterStemmer()
 
@@ -40,7 +38,7 @@ class ResponseHandler:
         result = list(word_counts.keys())
         if not result:
             return query.split()
-        if result and result[0] in ("tell", "say", "find", "search", "look"):
+        if result and result[0] in EXCLUDED_PREFIXES:
             result.pop(0)
         return result
 

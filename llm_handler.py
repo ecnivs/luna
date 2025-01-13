@@ -1,5 +1,6 @@
+# LLM Handler
 import requests
-import logging
+from settings import *
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -7,22 +8,21 @@ logging.basicConfig(level=logging.DEBUG,
                     force=True)
 
 class LlmHandler:
-    def __init__(self, core):
-        self.name = core.name
-        self.model = "llama2-uncensored"
+    def __init__(self):
+        self.model = LLM_MODEL
         self.session = requests.Session()
         self.get_prompt()
 
     def get_prompt(self):
         try:
-            with open('.prompt.txt', 'r') as file:
+            with open(PROMPT_FILE, 'r') as file:
                 self.prompt = file.read()
         except FileNotFoundError:
-            default = f"You are an AI Assistant named {self.name}"
-            with open('.prompt.txt', 'w') as file:
+            default = f"You are an AI Assistant named {NAME}"
+            with open(PROMPT_FILE, 'w') as file:
                 file.write(default)
             self.prompt = default
-            logging.error("'.prompt.txt' not found. Creating new one.")
+            logging.error(f"'{PROMPT_FILE}' not found. Creating new one.")
 
     def unload_model(self):
         data = {
@@ -34,33 +34,33 @@ class LlmHandler:
     def get_response(self, query):
         data = {
             "model": self.model,
-            "stream": False,
-            "context": [1, 2, 3],
+            "stream": STREAM,
+            "context": CONTEXT,
             "prompt": f"{query}",
             "system": f"{self.prompt}",
             "options": {
-                "num_keep": 5,
-                #"num_predict": 100,
-                "temperature": 0.8,
-                "top_k": 20,
-                "top_p": 0.9,
-                "min_p": 0.0,
-                "typical_p": 0.7,
-                "repeat_last_n": 33,
-                "repeat_penalty": 1.2,
-                "presence_penalty": 1.5,
-                "frequency_penalty": 1.0,
-                "mirostat": 1,
-                "mirostat_tau": 0.8,
-                "mirostat_eta": 0.6,
-                "penalize_newline": True,
-                "num_ctx": 1024,
-                "num_batch": 2,
-                "num_gpu": 1,
-                "main_gpu": 0,
-                "use_mmap": True,
-                "use_mlock": False,
-                "num_thread": 8
+                "num_keep": NUM_KEEP,
+                #"num_predict": NUM_PREDICT,
+                "temperature": TEMPERATURE,
+                "top_k": TOP_K,
+                "top_p": TOP_P,
+                "min_p": MIN_P,
+                "typical_p": TYPICAL_P,
+                "repeat_last_n": REPEAT_LAST_N,
+                "repeat_penalty": REPEAT_PENALTY,
+                "presence_penalty": PRESENCE_PENALTY,
+                "frequency_penalty": FREQUENCY_PENALTY,
+                "mirostat": MIROSTAT,
+                "mirostat_tau": MIROSTAT_TAU,
+                "mirostat_eta": MIROSTAT_ETA,
+                "penalize_newline": PENALIZE_NEWLINE,
+                "num_ctx": NUM_CTX,
+                "num_batch": NUM_BATCH,
+                "num_gpu": NUM_GPU,
+                "main_gpu": MAIN_GPU,
+                "use_mmap": USE_MMAP,
+                "use_mlock": USE_MLOCK,
+                "num_thread": NUM_THREAD
             }
         }
         response = self.session.post("http://localhost:11434/api/generate", json=data)
