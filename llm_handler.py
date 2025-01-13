@@ -21,6 +21,7 @@ class LlmHandler:
             default = f"You are an AI Assistant named {self.name}"
             with open('.prompt.txt', 'w') as file:
                 file.write(default)
+            self.prompt = default
             logging.error("'.prompt.txt' not found. Creating new one.")
 
     def unload_model(self):
@@ -35,11 +36,11 @@ class LlmHandler:
             "model": self.model,
             "stream": False,
             "context": [1, 2, 3],
-            "system": f"{self.prompt}",
             "prompt": f"{query}",
+            "system": f"{self.prompt}",
             "options": {
                 "num_keep": 5,
-                "num_predict": 100,
+                #"num_predict": 100,
                 "temperature": 0.8,
                 "top_k": 20,
                 "top_p": 0.9,
@@ -57,7 +58,6 @@ class LlmHandler:
                 "num_batch": 2,
                 "num_gpu": 1,
                 "main_gpu": 0,
-                "vocab_only": False,
                 "use_mmap": True,
                 "use_mlock": False,
                 "num_thread": 8
