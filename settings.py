@@ -3,6 +3,11 @@ import json
 import threading
 import logging
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(levelname)s - %(message)s',
+                    force=True)
+
 # Blossom Settings
 NAME = "Blossom"
 CALL_WORDS = ["he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"]

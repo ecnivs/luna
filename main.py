@@ -8,11 +8,6 @@ from TTS.api import TTS
 import torch
 import wave
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(levelname)s - %(message)s',
-                    force=True)
-
 class Core:
     def __init__(self):
         self.name = NAME

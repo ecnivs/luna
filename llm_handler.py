@@ -2,11 +2,6 @@
 import requests
 from settings import *
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(levelname)s - %(message)s',
-                    force=True)
-
 class LlmHandler:
     def __init__(self):
         self.model = LLM_MODEL
@@ -22,7 +17,7 @@ class LlmHandler:
             with open(PROMPT_FILE, 'w') as file:
                 file.write(default)
             self.prompt = default
-            logging.error(f"'{PROMPT_FILE}' not found. Creating new one.")
+            logging.error(f"'{PROMPT_FILE}' not found. Created new one.")
 
     def unload_model(self):
         data = {
