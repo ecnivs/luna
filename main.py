@@ -83,7 +83,7 @@ class Core:
                         frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
-        self.speak(self.handler.handler.get_response(f"Hey {self.name}"))
+        self.speak(self.handler.join("".join(self.handler.handler.get_response((f"Hey {self.name}")))))
         logging.info("Listening...")
 
         try:

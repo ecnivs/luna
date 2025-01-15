@@ -42,8 +42,13 @@ class ResponseHandler:
             result.pop(0)
         return result
 
+    def join(self, buffer):
+        if re.search(r'[.!?]$', buffer):
+            buffer = ' '.join(buffer.split())
+        return buffer
+
     def add_response(self, query, query_hash, intent):
-        response = self.handler.get_response(query).strip().lower()
+        response = self.join("".join(self.handler.get_response(query)))
         if response not in self.cache[intent]:
             self.cache[intent].append(response)
         self.cache[query_hash] = {
@@ -54,7 +59,6 @@ class ResponseHandler:
         if query.lower().startswith("oh "):
             query = query[3:]
         query_hash = self.hash_query(query.lower())
-        response = None
 
         if query_hash in self.cache:
             detected_intent = self.cache[query_hash]['intent']
@@ -63,7 +67,7 @@ class ResponseHandler:
                 threading.Thread(target=self.add_response, args=(query, query_hash, detected_intent)).start()
                 return f'{random.choice(cached_responses)}'
 
-        response = self.handler.get_response(query).strip().lower()
+        response = self.join("".join(self.handler.get_response(query)))
         intent_name = '.'.join(self.extract_key_phrases(query))
 
         if 'repeat' not in intent_name:

@@ -25,7 +25,6 @@ EXCLUDED_PREFIXES = ("tell", "say", "find", "search", "look")
 
 # LLM Settings
 LLM_MODEL = "llama2-uncensored"
-STREAM = False
 CONTEXT = [1, 2, 3]
 NUM_KEEP = 5
 NUM_PREDICT = 100

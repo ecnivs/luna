@@ -29,7 +29,7 @@ class LlmHandler:
     def get_response(self, query):
         data = {
             "model": self.model,
-            "stream": STREAM,
+            "stream": True,
             "context": CONTEXT,
             "prompt": f"{query}",
             "system": f"{self.prompt}",
@@ -58,5 +58,15 @@ class LlmHandler:
                 "num_thread": NUM_THREAD
             }
         }
-        response = self.session.post("http://localhost:11434/api/generate", json=data)
-        return (response.json()["response"])
+        response = self.session.post(
+            "http://localhost:11434/api/generate",
+            json=data,
+            stream=True
+        )
+        for chunk in response.iter_content(chunk_size=512):
+            chunk_str = chunk.decode("utf-8")
+            try:
+                chunk_json = json.loads(chunk_str)
+                yield chunk_json.get("response", "")
+            except json.JSONDecodeError:
+                continue
