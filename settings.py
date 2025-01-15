@@ -15,7 +15,7 @@ CALL_WORDS = ["he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "
 # Speech Settings
 TTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 SAMPLING_RATE = 16000
-MIN_CHUNK_SIZE = 1024
+CHUNK_SIZE = 1024
 FRAMES_PER_BUFFER = 4096
 EXCEPTION_ON_OVERFLOW = False
 RATE = 16000
@@ -52,7 +52,6 @@ NUM_THREAD = 8
 # File Paths
 VOSK_MODEL = "vosk-model"
 SPEAKER_WAV = "audio/speaker.wav"
-OUTPUT_WAV = "audio/output.wav"
 START_WAV = "audio/start.wav"
 END_WAV = "audio/end.wav"
 CACHE_FILE = "cache.json"

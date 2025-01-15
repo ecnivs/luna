@@ -1,8 +1,8 @@
 __pycache__/
 *.json
 vosk-model/
-audio/output.wav
+*_temp.wav
 .python-version
 .venv/
 *.txt
-*test.py
+*_test.py

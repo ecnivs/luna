@@ -9,7 +9,8 @@ import hashlib
 import random
 
 class ResponseHandler:
-    def __init__(self):
+    def __init__(self, core):
+        self.core = core
         self.handler = LlmHandler()
         self.cache_file = CACHE_FILE
         self.cache = self.load_cache()
@@ -42,13 +43,14 @@ class ResponseHandler:
             result.pop(0)
         return result
 
-    def join(self, buffer):
-        if re.search(r'[.!?]$', buffer):
-            buffer = ' '.join(buffer.split())
-        return buffer
+    def get_response(self, query):
+        response = "".join(self.handler.get_response(query))
+        if re.search(r'[.!?]$', response):
+            response = ' '.join(response.split())
+        return response
 
     def add_response(self, query, query_hash, intent):
-        response = self.join("".join(self.handler.get_response(query)))
+        response = self.get_response(query)
         if response not in self.cache[intent]:
             self.cache[intent].append(response)
         self.cache[query_hash] = {
@@ -59,6 +61,7 @@ class ResponseHandler:
         if query.lower().startswith("oh "):
             query = query[3:]
         query_hash = self.hash_query(query.lower())
+        response = ""
 
         if query_hash in self.cache:
             detected_intent = self.cache[query_hash]['intent']
@@ -67,7 +70,15 @@ class ResponseHandler:
                 threading.Thread(target=self.add_response, args=(query, query_hash, detected_intent)).start()
                 return f'{random.choice(cached_responses)}'
 
-        response = self.join("".join(self.handler.get_response(query)))
+        buffer = ""
+        for chunk in self.handler.get_response(query):
+            buffer += chunk
+            if re.search(r'[.!?]$', buffer):
+                buffer = ' '.join(buffer.split())
+                self.core.speak_queue.put(buffer)
+                response += buffer
+                buffer = ""
+
         intent_name = '.'.join(self.extract_key_phrases(query))
 
         if 'repeat' not in intent_name:
@@ -78,5 +89,3 @@ class ResponseHandler:
             self.cache[query_hash] = {
                 'intent': intent_name
             }
-        return response
-
