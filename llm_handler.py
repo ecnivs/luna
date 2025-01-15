@@ -35,7 +35,6 @@ class LlmHandler:
             "system": f"{self.prompt}",
             "options": {
                 "num_keep": NUM_KEEP,
-                #"num_predict": NUM_PREDICT,
                 "temperature": TEMPERATURE,
                 "top_k": TOP_K,
                 "top_p": TOP_P,

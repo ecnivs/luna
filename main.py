@@ -140,11 +140,6 @@ class Core:
                             logging.info("call detected!")
                             self.query = " ".join(query_words[1:])
 
-                        elif query_words[-1] == name_lower and len(query_words) > 2:
-                            self.called = True
-                            logging.info("call detected!")
-                            self.query = " ".join(query_words[:-1])
-
                 time.sleep(0.1)
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
