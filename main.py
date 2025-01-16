@@ -30,8 +30,8 @@ class Core:
         self.model = self.load_vosk_model()
         self.recognizer = KaldiRecognizer(self.model, SAMPLING_RATE)
         self.handler = ResponseHandler(self)
-        self.speak_queue = queue.Queue()
-        self.play_queue = queue.Queue()
+        self.speech_queue = queue.Queue()
+        self.audio_queue = queue.Queue()
 
     def load_vosk_model(self):
         if not os.path.exists(self.model):
@@ -43,19 +43,13 @@ class Core:
             logging.error(f'Error loading Vosk model: {e}')
             exit(1)
 
-    def speak(self, text, queue = False):
-        output_wav = f"{uuid.uuid4().hex}_temp.wav"
+    def speak(self, text, queue=False):
         try:
-            self.tts.tts_to_file(text,
-                    file_path = output_wav,
-                    speaker_wav = SPEAKER_WAV,
-                    language="en")
-            if queue:
-                self.play_queue.put(output_wav)
-            else:
-                self.play_audio(output_wav)
+            output_wav = f"{uuid.uuid4().hex}_temp.wav"
+            self.tts.tts_to_file(text, file_path = output_wav, speaker_wav = SPEAKER_WAV, language = "en")
+            (self.audio_queue.put if queue else self.play_audio)(output_wav)
         except Exception as e:
-            logging.error(f'Error in TTS: {e}')
+            logging.error(f"TTS error: {e}")
 
     def play_audio(self, filename):
         def audio_thread():
@@ -152,11 +146,11 @@ class Core:
             logging.info("Audio stream terminated.")
 
     def process_queue(self):
-        if not self.speak_queue.empty():
-            self.speak(self.speak_queue.get(), queue = True)
-        if not self.play_queue.empty():
+        if not self.speech_queue.empty():
+            self.speak(self.speech_queue.get(), queue = True)
+        if not self.audio_queue.empty():
             if not self.is_playing:
-                self.play_audio(self.play_queue.get())
+                self.play_audio(self.audio_queue.get())
 
     def run(self):
         self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)

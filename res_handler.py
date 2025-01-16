@@ -75,7 +75,7 @@ class ResponseHandler:
             buffer += chunk
             if re.search(r'[.!?]$', buffer):
                 buffer = ' '.join(buffer.split())
-                self.core.speak_queue.put(buffer)
+                self.core.speech_queue.put(buffer)
                 response += buffer
                 buffer = ""
 
