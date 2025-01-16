@@ -12,24 +12,25 @@ class ResponseHandler:
     def __init__(self, core):
         self.core = core
         self.handler = LlmHandler()
-        self.cache_file = CACHE_FILE
         self.cache = self.load_cache()
         self.stemmer = PorterStemmer()
 
-    def hash_query(self, query):
+    @staticmethod
+    def hash_query(query):
         return hashlib.sha256(query.encode()).hexdigest()
 
-    def load_cache(self):
-        if not os.path.exists(self.cache_file):
-            with open(self.cache_file, 'w') as file:
+    @staticmethod
+    def load_cache():
+        if not os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, 'w') as file:
                 json.dump({}, file)
             return {}
-        else:
-            with open(self.cache_file, 'r') as file:
-                return json.load(file)
+
+        with open(CACHE_FILE, 'r') as file:
+            return json.load(file)
 
     def save_cache(self):
-        with open(self.cache_file, 'w') as file:
+        with open(CACHE_FILE, 'w') as file:
             json.dump(self.cache, file)
 
     def extract_key_phrases(self, query):
@@ -45,9 +46,10 @@ class ResponseHandler:
 
     def get_response(self, query):
         response = "".join(self.handler.get_response(query))
-        if re.search(r'[.!?]$', response):
-            response = ' '.join(response.split())
-        return response
+        with self.core.lock:
+            if re.search(r'[.!?]$', response):
+                response = ' '.join(response.split())
+            return response
 
     def add_response(self, query, query_hash, intent):
         response = self.get_response(query)
@@ -70,14 +72,14 @@ class ResponseHandler:
                 threading.Thread(target=self.add_response, args=(query, query_hash, detected_intent)).start()
                 return f'{random.choice(cached_responses)}'
 
-        buffer = ""
+        buffer = []
         for chunk in self.handler.get_response(query):
-            buffer += chunk
-            if re.search(r'[.!?]$', buffer):
-                buffer = ' '.join(buffer.split())
-                self.core.speech_queue.put(buffer)
-                response += buffer
-                buffer = ""
+            buffer.append(chunk)
+            if re.search(r'[.!?]$', ''.join(buffer)):
+                chunk_str = ' '.join(''.join(buffer).split())
+                self.core.speech_queue.put(chunk_str)
+                response += chunk_str
+                buffer = []
 
         intent_name = '.'.join(self.extract_key_phrases(query))
 
