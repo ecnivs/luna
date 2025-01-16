@@ -63,7 +63,7 @@ class ResponseHandler:
         if query.lower().startswith("oh "):
             query = query[3:]
         query_hash = self.hash_query(query.lower())
-        response = ""
+        response = []
 
         if query_hash in self.cache:
             detected_intent = self.cache[query_hash]['intent']
@@ -78,9 +78,10 @@ class ResponseHandler:
             if re.search(r'[.!?]$', ''.join(buffer)):
                 chunk_str = ' '.join(''.join(buffer).split())
                 self.core.speech_queue.put(chunk_str)
-                response += chunk_str
+                response.append(chunk_str)
                 buffer = []
 
+        response = ' '.join(response)
         intent_name = '.'.join(self.extract_key_phrases(query))
 
         if 'repeat' not in intent_name:

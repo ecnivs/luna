@@ -20,52 +20,67 @@ class LlmHandler:
             logging.error(f"'{PROMPT_FILE}' not found. Created new one.")
 
     def unload_model(self):
-        data = {
-            "model": self.model,
-            "keep_alive": 0
-        }
-        self.session.post("http://localhost:11434/api/generate", json=data)
+        try:
+            data = {
+                "model": self.model,
+                "keep_alive": 0
+            }
+            response = self.session.post("http://localhost:11434/api/generate", json=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Failed to unload model: {e}")
 
     def get_response(self, query):
-        data = {
-            "model": self.model,
-            "stream": True,
-            "context": CONTEXT,
-            "prompt": f"{query}",
-            "system": f"{self.prompt}",
-            "options": {
-                "num_keep": NUM_KEEP,
-                "temperature": TEMPERATURE,
-                "top_k": TOP_K,
-                "top_p": TOP_P,
-                "min_p": MIN_P,
-                "typical_p": TYPICAL_P,
-                "repeat_last_n": REPEAT_LAST_N,
-                "repeat_penalty": REPEAT_PENALTY,
-                "presence_penalty": PRESENCE_PENALTY,
-                "frequency_penalty": FREQUENCY_PENALTY,
-                "mirostat": MIROSTAT,
-                "mirostat_tau": MIROSTAT_TAU,
-                "mirostat_eta": MIROSTAT_ETA,
-                "penalize_newline": PENALIZE_NEWLINE,
-                "num_ctx": NUM_CTX,
-                "num_batch": NUM_BATCH,
-                "num_gpu": NUM_GPU,
-                "main_gpu": MAIN_GPU,
-                "use_mmap": USE_MMAP,
-                "use_mlock": USE_MLOCK,
-                "num_thread": NUM_THREAD
+        try:
+            data = {
+                "model": self.model,
+                "stream": True,
+                "context": CONTEXT,
+                "prompt": f"{query}",
+                "system": f"{self.prompt}",
+                "options": {
+                    "num_keep": NUM_KEEP,
+                    "temperature": TEMPERATURE,
+                    "top_k": TOP_K,
+                    "top_p": TOP_P,
+                    "min_p": MIN_P,
+                    "typical_p": TYPICAL_P,
+                    "repeat_last_n": REPEAT_LAST_N,
+                    "repeat_penalty": REPEAT_PENALTY,
+                    "presence_penalty": PRESENCE_PENALTY,
+                    "frequency_penalty": FREQUENCY_PENALTY,
+                    "mirostat": MIROSTAT,
+                    "mirostat_tau": MIROSTAT_TAU,
+                    "mirostat_eta": MIROSTAT_ETA,
+                    "penalize_newline": PENALIZE_NEWLINE,
+                    "num_ctx": NUM_CTX,
+                    "num_batch": NUM_BATCH,
+                    "num_gpu": NUM_GPU,
+                    "main_gpu": MAIN_GPU,
+                    "use_mmap": USE_MMAP,
+                    "use_mlock": USE_MLOCK,
+                    "num_thread": NUM_THREAD
+                }
             }
-        }
-        response = self.session.post(
-            "http://localhost:11434/api/generate",
-            json=data,
-            stream=True
-        )
-        for chunk in response.iter_content(chunk_size=512):
-            chunk_str = chunk.decode("utf-8")
-            try:
-                chunk_json = json.loads(chunk_str)
-                yield chunk_json.get("response", "")
-            except json.JSONDecodeError:
-                continue
+            response = self.session.post(
+                "http://localhost:11434/api/generate",
+                json=data,
+                stream=True
+            )
+
+            if response.status_code != 200:
+                logging.error(f"API returned status {response.status_code}: {response.text}")
+                response.raise_for_status()
+
+            for chunk in response.iter_content(chunk_size=512):
+                chunk_str = chunk.decode("utf-8")
+                try:
+                    chunk_json = json.loads(chunk_str)
+                    yield chunk_json.get("response", "")
+                except json.JSONDecodeError:
+                    continue
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Request to API Failed: {e}")
+        except Exception as e:
+            logging.exception(f"Unexpected error: {e}")
