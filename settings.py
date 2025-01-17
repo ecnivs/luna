@@ -25,6 +25,7 @@ EXCLUDED_PREFIXES = ("tell", "say", "find", "search", "look")
 
 # LLM Settings
 LLM_MODEL = "llama2-uncensored"
+KEEP_ALIVE = 5
 CONTEXT = [1, 2, 3]
 NUM_KEEP = 5
 TEMPERATURE = 0.8

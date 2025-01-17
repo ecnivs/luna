@@ -35,6 +35,7 @@ class LlmHandler:
             data = {
                 "model": self.model,
                 "stream": True,
+                "keep_alive": KEEP_ALIVE,
                 "context": CONTEXT,
                 "prompt": f"{query}",
                 "system": f"{self.prompt}",
