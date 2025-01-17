@@ -11,7 +11,7 @@ import random
 class ResponseHandler:
     def __init__(self, core):
         self.core = core
-        self.handler = LlmHandler()
+        self.llm = LlmHandler()
         self.cache = self.load_cache()
         self.stemmer = PorterStemmer()
 
@@ -45,7 +45,7 @@ class ResponseHandler:
         return result
 
     def get_response(self, query):
-        response = "".join(self.handler.get_response(query))
+        response = "".join(self.llm.get_response(query))
         with self.core.lock:
             if re.search(r'[.!?]$', response):
                 response = ' '.join(response.split())
@@ -63,17 +63,19 @@ class ResponseHandler:
         if query.lower().startswith("oh "):
             query = query[3:]
         query_hash = self.hash_query(query.lower())
-        response = []
 
         if query_hash in self.cache:
             detected_intent = self.cache[query_hash]['intent']
             cached_responses = self.cache[detected_intent]
             if len(cached_responses) > 2:
                 threading.Thread(target=self.add_response, args=(query, query_hash, detected_intent)).start()
-                return f'{random.choice(cached_responses)}'
+                sentences = re.split(r'(?<=[.!?])\s+', f'{random.choice(cached_responses)}')
+                for sentence in sentences:
+                    self.core.speech_queue.put(sentence)
+                return
 
-        buffer = []
-        for chunk in self.handler.get_response(query):
+        buffer, response = [], []
+        for chunk in self.llm.get_response(query):
             buffer.append(chunk)
             if re.search(r'[.!?]$', ''.join(buffer)):
                 chunk_str = ' '.join(''.join(buffer).split())
