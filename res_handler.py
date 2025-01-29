@@ -43,23 +43,18 @@ class ResponseHandler:
             result.pop(0)
         return result
 
-    def get_response(self, query):
-        response = "".join(self.llm.get_response(query))
-        with self.core.lock:
-            return response
-
     def add_response(self, query, query_hash, intent):
-        response = self.get_response(query)
+        response = "".join(self.llm.get_response(query))
         if response not in self.cache[intent]:
             self.cache[intent].append(response)
         self.cache[query_hash] = {
             'intent': intent
         }
 
-    def handle(self, query):
+    def handle(self, query, nocache = False):
         query_hash = self.hash_query(query.lower())
 
-        if query_hash in self.cache:
+        if query_hash in self.cache and not nocache:
             detected_intent = self.cache[query_hash]['intent']
             cached_responses = self.cache[detected_intent]
             if len(cached_responses) > 2:
@@ -71,8 +66,9 @@ class ResponseHandler:
 
         response = []
         for chunk in self.llm.get_response(query):
-            self.core.speech_queue.put(chunk)
-            response.append(chunk)
+            if chunk.strip():
+                self.core.speech_queue.put(chunk)
+                response.append(chunk)
 
         response = ' '.join(response)
         intent_name = '.'.join(self.extract_key_phrases(query))

@@ -92,7 +92,7 @@ class Core:
                         frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
-        self.speak(self.handler.get_response((f"Hey {self.name}")))
+        self.speak(self.handler.handle(f"Hey {self.name}", nocache = True))
         logging.info("Listening...")
 
         try:
