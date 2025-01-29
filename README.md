@@ -30,7 +30,7 @@ pip install -r requirements.txt
 ```
 5. Download an LLM:
 ```bash
-ollama pull llama2-uncensored
+ollama pull llama3.2:1b
 ```
 6. Run the Software:
 ```bash

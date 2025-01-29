@@ -25,7 +25,7 @@ RATE = 16000
 EXCLUDED_PREFIXES = ("tell", "say", "find", "search", "look")
 
 # LLM Settings
-LLM_MODEL = "llama2-uncensored"
+LLM_MODEL = "llama3.2:1b"
 KEEP_ALIVE = 5
 CONTEXT = [1, 2, 3]
 NUM_KEEP = 5

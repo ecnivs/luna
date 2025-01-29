@@ -43,7 +43,7 @@ class Core:
             logging.error(f'Error loading Vosk model: {e}')
             exit(1)
 
-    def speak(self, text, queue=False):
+    def speak(self, text, queue = False):
         try:
             output_wav = f"{uuid.uuid4().hex}_temp.wav"
             self.tts.tts_to_file(text, file_path = output_wav, speaker_wav = SPEAKER_WAV, language = "en")
@@ -92,7 +92,7 @@ class Core:
                         frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
-        self.speak(self.handler.handle(f"Hey {self.name}", nocache = True))
+        self.speech_queue.put("".join(self.handler.llm.get_response(f"Hey {self.name}")))
         logging.info("Listening...")
 
         try:
