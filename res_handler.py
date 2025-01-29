@@ -1,5 +1,4 @@
 # Response Handler
-import re
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -47,8 +46,6 @@ class ResponseHandler:
     def get_response(self, query):
         response = "".join(self.llm.get_response(query))
         with self.core.lock:
-            if re.search(r'[.!?]$', response):
-                response = ' '.join(response.split())
             return response
 
     def add_response(self, query, query_hash, intent):
@@ -60,8 +57,6 @@ class ResponseHandler:
         }
 
     def handle(self, query):
-        if query.lower().startswith("oh "):
-            query = query[3:]
         query_hash = self.hash_query(query.lower())
 
         if query_hash in self.cache:
@@ -74,14 +69,10 @@ class ResponseHandler:
                     self.core.speech_queue.put(sentence)
                 return
 
-        buffer, response = [], []
+        response = []
         for chunk in self.llm.get_response(query):
-            buffer.append(chunk)
-            if re.search(r'[.!?]$', ''.join(buffer)):
-                chunk_str = ' '.join(''.join(buffer).split())
-                self.core.speech_queue.put(chunk_str)
-                response.append(chunk_str)
-                buffer = []
+            self.core.speech_queue.put(chunk)
+            response.append(chunk)
 
         response = ' '.join(response)
         intent_name = '.'.join(self.extract_key_phrases(query))

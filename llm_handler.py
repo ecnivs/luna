@@ -30,10 +30,10 @@ class LlmHandler:
         except requests.exceptions.RequestException as e:
             logging.error(f"Failed to unload model: {e}")
 
-    def get_response(self, query):
+    def get_response(self, query, LLM = LLM_MODEL):
         try:
             data = {
-                "model": self.model,
+                "model": LLM,
                 "stream": True,
                 "keep_alive": KEEP_ALIVE,
                 "context": CONTEXT,
@@ -69,17 +69,18 @@ class LlmHandler:
                 stream=True
             )
 
-            if response.status_code != 200:
-                logging.error(f"API returned status {response.status_code}: {response.text}")
-                response.raise_for_status()
-
+            buffer = []
             for chunk in response.iter_content(chunk_size=512):
                 chunk_str = chunk.decode("utf-8")
                 try:
                     chunk_json = json.loads(chunk_str)
-                    yield chunk_json.get("response", "")
+                    buffer.append(chunk_json.get("response", ""))
                 except json.JSONDecodeError:
                     continue
+                if re.search(r'[.!?]$', ''.join(buffer)):
+                    chunk_str = ' '.join(''.join(buffer).split())
+                    buffer = []
+                    yield chunk_str
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Request to API Failed: {e}")
