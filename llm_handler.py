@@ -6,18 +6,7 @@ class LlmHandler:
     def __init__(self):
         self.model = LLM_MODEL
         self.session = requests.Session()
-        self.get_prompt()
-
-    def get_prompt(self):
-        try:
-            with open(PROMPT_FILE, 'r') as file:
-                self.prompt = file.read()
-        except FileNotFoundError:
-            default = f"You are an AI Assistant named {NAME}"
-            with open(PROMPT_FILE, 'w') as file:
-                file.write(default)
-            self.prompt = default
-            logging.error(f"'{PROMPT_FILE}' not found. Created new one.")
+        self.prompt = f"You are an AI Assistant named {NAME}. {PROMPT}"
 
     def unload_model(self):
         try:
@@ -34,7 +23,6 @@ class LlmHandler:
         try:
             data = {
                 "model": LLM,
-                "stream": True,
                 "keep_alive": KEEP_ALIVE,
                 "context": CONTEXT,
                 "prompt": f"{query}",

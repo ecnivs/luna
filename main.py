@@ -93,11 +93,15 @@ class Core:
                         frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
+        # load model into memory
         self.speech_queue.put("".join(self.handler.llm.get_response(f"Hey {self.name}")))
+
         logging.info("Listening...")
 
         try:
             while not self.shutdown_flag.is_set():
+
+                # halt if audio is being played
                 with self.condition:
                     while not self.audio_queue.empty():
                         self.condition.wait()

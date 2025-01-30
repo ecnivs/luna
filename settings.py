@@ -29,11 +29,11 @@ LLM_MODEL = "llama3.2:1b"
 KEEP_ALIVE = 5
 CONTEXT = [1, 2, 3]
 NUM_KEEP = 5
-TEMPERATURE = 0.8
-TOP_K = 0.8
-TOP_P = 0.9
+TEMPERATURE = 1.0
+TOP_K = 20
+TOP_P = 1.0
 MIN_P = 0.0
-TYPICAL_P = 0.7
+TYPICAL_P = 0.8
 REPEAT_LAST_N = 33
 REPEAT_PENALTY = 1.2
 PRESENCE_PENALTY = 1.5
@@ -56,4 +56,13 @@ SPEAKER_WAV = "audio/speaker.wav"
 START_WAV = "audio/start.wav"
 END_WAV = "audio/end.wav"
 CACHE_FILE = "cache.json"
-PROMPT_FILE = ".prompt.txt"
+
+# Prompt
+PROMPT = f"""
+Use a poetic, lyrical tone.
+Tell it like it is; don't sugarcoat responses.
+Readily share strong opinions.
+Be innovative and think outside the box.
+Be practical above all.
+Be concise, get right to the point.
+"""
