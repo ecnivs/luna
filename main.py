@@ -23,6 +23,7 @@ class Core:
 
     def on_init(self):
         self.lock = threading.Lock()
+        self.condition = threading.Condition()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tts = TTS(model_name=TTS_MODEL).to(self.device)
         self.shutdown_flag = threading.Event()
@@ -43,11 +44,11 @@ class Core:
             logging.error(f'Error loading Vosk model: {e}')
             exit(1)
 
-    def speak(self, text, queue = False):
+    def speak(self, text):
         try:
             output_wav = f"{uuid.uuid4().hex}_temp.wav"
             self.tts.tts_to_file(text, file_path = output_wav, speaker_wav = SPEAKER_WAV, language = "en")
-            (self.audio_queue.put if queue else self.play_audio)(output_wav)
+            self.audio_queue.put(output_wav)
         except Exception as e:
             logging.error(f"TTS error: {e}")
 
@@ -97,7 +98,12 @@ class Core:
 
         try:
             while not self.shutdown_flag.is_set():
+                with self.condition:
+                    while not self.audio_queue.empty():
+                        self.condition.wait()
+
                 data = stream.read(FRAMES_PER_BUFFER, exception_on_overflow=EXCEPTION_ON_OVERFLOW)
+
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     if 'text' in result and result['text'].strip() != "":
@@ -147,10 +153,14 @@ class Core:
 
     def process_queue(self):
         if not self.speech_queue.empty():
-            self.speak(self.speech_queue.get(), queue = True)
+            self.speak(self.speech_queue.get())
         if not self.audio_queue.empty():
             if not self.is_playing:
                 self.play_audio(self.audio_queue.get())
+        elif not self.is_playing:
+            time.sleep(0.1)
+            with self.condition:
+                self.condition.notify()
 
     def run(self):
         self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)
