@@ -4,7 +4,7 @@
 ![1733479824534](https://github.com/user-attachments/assets/05031c5a-5c77-491a-8be4-ae9bb38e9c97)
 
 ## 🏆 Recognition
-- Secured **All India 4th Place** in **SmashHack 2024** under the name **Luna AI**.
+- Secured **All India 4th Place** in **SmashHack 2024** under the name **Luna AI**
 
 ## Overview
 This repository is dedicated to the software development of **Blossom**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
