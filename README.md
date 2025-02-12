@@ -1,14 +1,20 @@
 # Blossom
+> SEAMLESS.INTELLIGENT.SECURE - Your Virtual Assistant
+
+![1733479824534](https://github.com/user-attachments/assets/05031c5a-5c77-491a-8be4-ae9bb38e9c97)
+
+## 🏆 Recognition
+- **Secured 4th Place** in SmashHack 2024 under the name **Luna AI**.
 
 ## Overview
 This repository is dedicated to the software development of **Blossom**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
 
 ## Prerequisites
-* Python 3.x (Tested with Python 3.11 using pyenv)
-* Required Python libraries (listed in `requirements.txt`)
-* [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
-* [Ollama](https://ollama.com/)
-* [Vosk model](https://alphacephei.com/vosk/models)
+- Python 3.x (Tested with Python 3.11 using pyenv)
+- Required Python libraries (listed in `requirements.txt`)
+- [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
+- [Ollama](https://ollama.com/)
+- [Vosk model](https://alphacephei.com/vosk/models)
 
 ## Installation
 1. Clone the repository:
