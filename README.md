@@ -1,7 +1,7 @@
 # Blossom
 > SEAMLESS.INTELLIGENT.SECURE - Your Virtual Assistant
 
-![1733479824534](https://github.com/user-attachments/assets/05031c5a-5c77-491a-8be4-ae9bb38e9c97)
+![swappy-20250213-101131](https://github.com/user-attachments/assets/d5bffa73-92b5-48e2-8e53-69e0f54f6dcd)
 
 ## 🏆 Recognition
 > Secured **All India 4th Place** in **SmashHack 2024** under the name **Luna AI**
