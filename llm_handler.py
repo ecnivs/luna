@@ -3,12 +3,18 @@ import requests
 from settings import *
 
 class LlmHandler:
+    """
+    Handles interactions with the AI model by sending requests to a local API endpoint
+    and processing streamed responses.
+    """
     def __init__(self):
+        """ Initializes the LlmHandler with model details and a session for API requests."""
         self.model = LLM_MODEL
         self.session = requests.Session()
         self.prompt = f"You are an AI Assistant named {NAME}. {PROMPT}"
 
     def unload_model(self):
+        """Sends a request to unload the model from memory."""
         try:
             data = {
                 "model": self.model,
@@ -20,6 +26,15 @@ class LlmHandler:
             logging.error(f"Failed to unload model: {e}")
 
     def get_response(self, query, LLM = LLM_MODEL):
+        """
+        Sends a query to the AI model and streams the response.
+
+        Args:
+            query (str): The user input/query.
+            LLM (str): The AI model to use.
+        Yields:
+            str: Processed chunks of the AI model's response.
+        """
         try:
             data = {
                 "model": LLM,

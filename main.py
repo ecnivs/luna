@@ -12,6 +12,7 @@ import uuid
 import glob
 
 class Core:
+    """Core class responsible for managing speech recognition and text-to-speech and user queries."""
     def __init__(self):
         self.name = NAME
         self.model = VOSK_MODEL
@@ -22,6 +23,7 @@ class Core:
         self.on_init()
 
     def on_init(self):
+        """Initializes the necessary components for the class instance."""
         self.lock = threading.Lock()
         self.condition = threading.Condition()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,6 +37,7 @@ class Core:
         self.audio_queue = queue.Queue()
 
     def load_vosk_model(self):
+        """Loads the Vosk speech recognition model."""
         if not os.path.exists(self.model):
             logging.info(f'Model not found at {self.model}, please check the path.')
             exit(1)
@@ -45,6 +48,7 @@ class Core:
             exit(1)
 
     def speak(self, text):
+        """Generate speech audio from text using TTS and queue it for playback."""
         try:
             output_wav = f"{uuid.uuid4().hex}_temp.wav"
             self.tts.tts_to_file(text, file_path = output_wav, speaker_wav = SPEAKER_WAV, language = "en")
@@ -53,6 +57,7 @@ class Core:
             logging.error(f"TTS error: {e}")
 
     def play_audio(self, filename):
+        """Play the generated or pre-recorded audio file."""
         def audio_thread():
             self.is_playing = True
             stream = None
@@ -86,6 +91,7 @@ class Core:
         threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
+        """Capture and process speech input."""
         stream = self.audio.open(format=pyaudio.paInt16,
                         channels = 1,
                         rate = RATE,
@@ -156,6 +162,7 @@ class Core:
             logging.info("Audio stream terminated.")
 
     def process_queue(self):
+        """ Process speech and audio playback queues."""
         if not self.speech_queue.empty():
             self.speak(self.speech_queue.get())
         if not self.audio_queue.empty():
@@ -167,6 +174,7 @@ class Core:
                 self.condition.notify()
 
     def run(self):
+        """Main loop for processing user queries."""
         self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)
         self.speech_thread.start()
 
