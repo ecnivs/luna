@@ -23,6 +23,8 @@ RATE = 16000
 
 # Response Handler Settings
 EXCLUDED_PREFIXES = ("tell", "say", "find", "search", "look")
+MAX_LRU_SIZE = 1000
+MAX_LFU_SIZE = 5000
 
 # LLM Settings
 LLM_MODEL = "llama3.2:1b"
