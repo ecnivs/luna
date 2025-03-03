@@ -19,6 +19,7 @@ class Core:
         self.query = None
         self.called = False
         self.is_playing = False
+        self.outstream = None
 
         self.on_init()
 
@@ -35,6 +36,11 @@ class Core:
         self.handler = ResponseHandler(self)
         self.speech_queue = queue.Queue()
         self.audio_queue = queue.Queue()
+        self.instream = self.audio.open(format=pyaudio.paInt16,
+                channels = 1,
+                rate = RATE,
+                input = True,
+                frames_per_buffer = FRAMES_PER_BUFFER)
 
     def load_vosk_model(self):
         """Loads the Vosk speech recognition model."""
@@ -60,11 +66,11 @@ class Core:
         """Play the generated or pre-recorded audio file."""
         def audio_thread():
             self.is_playing = True
-            stream = None
+            self.outstream = None
             try:
                 with wave.open(filename, 'rb') as wf:
                     chunk_size = min(CHUNK_SIZE, wf.getnframes())
-                    stream = self.audio.open(
+                    self.outstream = self.audio.open(
                         format=self.audio.get_format_from_width(wf.getsampwidth()),
                         channels=wf.getnchannels(),
                         rate=wf.getframerate(),
@@ -72,9 +78,9 @@ class Core:
                         frames_per_buffer=chunk_size)
 
                     data = wf.readframes(wf.getnframes())
-                    stream.write(data)
+                    self.outstream.write(data)
                     time.sleep(0.1)
-                    stream.stop_stream()
+                    self.outstream.stop_stream()
 
                 if "_temp" in filename:
                     os.remove(filename)
@@ -83,21 +89,17 @@ class Core:
             except Exception as e:
                 logging.error(f'Error during playback of {filename}: {e}')
             finally:
-                if stream is not None:
-                    if stream.is_active():
-                        stream.stop_stream()
-                    stream.close()
+                if self.outstream is not None:
+                    if self.outstream.is_active():
+                        self.outstream.stop_stream()
+                    self.outstream.close()
 
         threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
         """Capture and process speech input."""
-        stream = self.audio.open(format=pyaudio.paInt16,
-                        channels = 1,
-                        rate = RATE,
-                        input = True,
-                        frames_per_buffer = FRAMES_PER_BUFFER)
-        stream.start_stream()
+
+        self.instream.start_stream()
 
         # load model into memory
         self.speech_queue.put("".join(self.handler.llm.get_response(f"Hey {self.name}")))
@@ -112,7 +114,7 @@ class Core:
                     while not self.audio_queue.empty():
                         self.condition.wait()
 
-                data = stream.read(FRAMES_PER_BUFFER, exception_on_overflow=EXCEPTION_ON_OVERFLOW)
+                data = self.instream.read(FRAMES_PER_BUFFER, exception_on_overflow=EXCEPTION_ON_OVERFLOW)
 
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
@@ -156,8 +158,8 @@ class Core:
         except Exception as e:
             logging.error(f'Unexpected error in audio stream: {e}')
         finally:
-            stream.stop_stream()
-            stream.close()
+            self.instream.stop_stream()
+            self.instream.close()
             self.audio.terminate()
             logging.info("Audio stream terminated.")
 
