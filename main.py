@@ -65,40 +65,38 @@ class Core:
     def play_audio(self, filename):
         """Play the generated or pre-recorded audio file."""
         def audio_thread():
-            self.is_playing = True
-            self.outstream = None
-            try:
-                with wave.open(filename, 'rb') as wf:
-                    chunk_size = min(CHUNK_SIZE, wf.getnframes())
-                    self.outstream = self.audio.open(
-                        format=self.audio.get_format_from_width(wf.getsampwidth()),
-                        channels=wf.getnchannels(),
-                        rate=wf.getframerate(),
-                        output=True,
-                        frames_per_buffer=chunk_size)
+            with self.lock:
+                self.outstream = None
+                try:
+                    with wave.open(filename, 'rb') as wf:
+                        chunk_size = min(CHUNK_SIZE, wf.getnframes())
+                        self.outstream = self.audio.open(
+                            format=self.audio.get_format_from_width(wf.getsampwidth()),
+                            channels=wf.getnchannels(),
+                            rate=wf.getframerate(),
+                            output=True,
+                            frames_per_buffer=chunk_size)
 
-                    data = wf.readframes(wf.getnframes())
-                    self.outstream.write(data)
-                    time.sleep(0.1)
-                    self.outstream.stop_stream()
-
-                if "_temp" in filename:
-                    os.remove(filename)
-                self.is_playing = False
-
-            except Exception as e:
-                logging.error(f'Error during playback of {filename}: {e}')
-            finally:
-                if self.outstream is not None:
-                    if self.outstream.is_active():
+                        data = wf.readframes(wf.getnframes())
+                        self.outstream.write(data)
+                        time.sleep(0.1)
                         self.outstream.stop_stream()
-                    self.outstream.close()
+
+                    if "_temp" in filename:
+                        os.remove(filename)
+
+                except Exception as e:
+                    logging.error(f'Error during playback of {filename}: {e}')
+                finally:
+                    if self.outstream is not None:
+                        if self.outstream.is_active():
+                            self.outstream.stop_stream()
+                        self.outstream.close()
 
         threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
         """Capture and process speech input."""
-
         self.instream.start_stream()
 
         # load model into memory
@@ -108,13 +106,8 @@ class Core:
 
         try:
             while not self.shutdown_flag.is_set():
-
-                # halt if audio is being played
-                with self.condition:
-                    while not self.audio_queue.empty():
-                        self.condition.wait()
-
-                data = self.instream.read(FRAMES_PER_BUFFER, exception_on_overflow=EXCEPTION_ON_OVERFLOW)
+                data = self.instream.read(FRAMES_PER_BUFFER,
+                                          exception_on_overflow=EXCEPTION_ON_OVERFLOW)
 
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
@@ -152,7 +145,6 @@ class Core:
                             logging.info("call detected!")
                             self.query = " ".join(query_words[1:])
 
-                time.sleep(0.1)
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
         except Exception as e:
@@ -170,10 +162,6 @@ class Core:
         if not self.audio_queue.empty():
             if not self.is_playing:
                 self.play_audio(self.audio_queue.get())
-        elif not self.is_playing:
-            time.sleep(0.1)
-            with self.condition:
-                self.condition.notify()
 
     def run(self):
         """Main loop for processing user queries."""
