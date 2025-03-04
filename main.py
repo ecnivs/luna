@@ -3,13 +3,13 @@ from res_handler import ResponseHandler
 from settings import *
 import pyaudio
 from vosk import Model, KaldiRecognizer
-import time
 from TTS.api import TTS
 import torch
 import wave
 import queue
 import uuid
 import glob
+import time
 
 class Core:
     """Core class responsible for managing speech recognition and text-to-speech and user queries."""
@@ -19,7 +19,6 @@ class Core:
         self.query = None
         self.called = False
         self.is_playing = False
-        self.outstream = None
 
         self.on_init()
 
@@ -28,7 +27,7 @@ class Core:
         self.lock = threading.Lock()
         self.condition = threading.Condition()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tts = TTS(model_name=TTS_MODEL).to(self.device)
+        self.tts = TTS(model_name=TTS_MODEL, progress_bar=False).to(self.device)
         self.shutdown_flag = threading.Event()
         self.audio = pyaudio.PyAudio()
         self.model = self.load_vosk_model()
@@ -36,11 +35,6 @@ class Core:
         self.handler = ResponseHandler(self)
         self.speech_queue = queue.Queue()
         self.audio_queue = queue.Queue()
-        self.instream = self.audio.open(format=pyaudio.paInt16,
-                channels = 1,
-                rate = RATE,
-                input = True,
-                frames_per_buffer = FRAMES_PER_BUFFER)
 
     def load_vosk_model(self):
         """Loads the Vosk speech recognition model."""
@@ -54,10 +48,11 @@ class Core:
             exit(1)
 
     def speak(self, text):
-        """Generate speech audio from text using TTS and queue it for playback."""
+        """Generate speech audio from text using TTS and adjust speed."""
         try:
             output_wav = f"{uuid.uuid4().hex}_temp.wav"
-            self.tts.tts_to_file(text, file_path = output_wav, speaker_wav = SPEAKER_WAV, language = "en")
+            self.tts.tts_to_file(text, file_path=output_wav, speaker_wav=SPEAKER_WAV, language="en")
+
             self.audio_queue.put(output_wav)
         except Exception as e:
             logging.error(f"TTS error: {e}")
@@ -65,56 +60,63 @@ class Core:
     def play_audio(self, filename):
         """Play the generated or pre-recorded audio file."""
         def audio_thread():
-            with self.lock:
-                self.outstream = None
-                try:
-                    with wave.open(filename, 'rb') as wf:
-                        chunk_size = min(CHUNK_SIZE, wf.getnframes())
-                        self.outstream = self.audio.open(
-                            format=self.audio.get_format_from_width(wf.getsampwidth()),
-                            channels=wf.getnchannels(),
-                            rate=wf.getframerate(),
-                            output=True,
-                            frames_per_buffer=chunk_size)
+            self.is_playing = True
+            stream = None
+            try:
+                with wave.open(filename, 'rb') as wf:
+                    chunk_size = min(CHUNK_SIZE, wf.getnframes())
+                    stream = self.audio.open(
+                        format=self.audio.get_format_from_width(wf.getsampwidth()),
+                        channels=wf.getnchannels(),
+                        rate=wf.getframerate(),
+                        output=True,
+                        frames_per_buffer=chunk_size)
 
-                        data = wf.readframes(wf.getnframes())
-                        self.outstream.write(data)
-                        time.sleep(0.1)
-                        self.outstream.stop_stream()
+                    data = wf.readframes(wf.getnframes())
+                    stream.write(data)
+                    time.sleep(0.1)
+                    stream.stop_stream()
 
-                    if "_temp" in filename:
-                        os.remove(filename)
+                if "_temp" in filename:
+                    os.remove(filename)
+                self.is_playing = False
 
-                except Exception as e:
-                    logging.error(f'Error during playback of {filename}: {e}')
-                finally:
-                    if self.outstream is not None:
-                        if self.outstream.is_active():
-                            self.outstream.stop_stream()
-                        self.outstream.close()
+            except Exception as e:
+                logging.error(f'Error during playback of {filename}: {e}')
+            finally:
+                if stream is not None:
+                    if stream.is_active():
+                        stream.stop_stream()
+                    stream.close()
 
         threading.Thread(target=audio_thread, daemon=True).start()
 
     def recognize_speech(self):
         """Capture and process speech input."""
-        self.instream.start_stream()
+        stream = self.audio.open(format=pyaudio.paInt16,
+                        channels = 1,
+                        rate = RATE,
+                        input = True,
+                        frames_per_buffer = FRAMES_PER_BUFFER)
+        stream.start_stream()
 
         # load model into memory
-        self.speech_queue.put("".join(self.handler.llm.get_response(f"Hey {self.name}")))
+        self.speech_queue.put(" ".join(self.handler.llm.get_response(f"Hey {self.name}")))
 
         logging.info("Listening...")
+        logging.info(f"Say 'Hey {self.name}'")
 
         try:
             while not self.shutdown_flag.is_set():
-                data = self.instream.read(FRAMES_PER_BUFFER,
-                                          exception_on_overflow=EXCEPTION_ON_OVERFLOW)
+                data = stream.read(FRAMES_PER_BUFFER,
+                                   exception_on_overflow=EXCEPTION_ON_OVERFLOW)
 
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     if 'text' in result and result['text'].strip() != "":
                         with self.lock:
                             self.query = result['text'].strip()
-                        logging.info(f'Recognized: {self.query}')
+                        logging.info(f"Recognized: {self.query}")
 
                 with self.lock:
                     if not self.query:
@@ -145,18 +147,19 @@ class Core:
                             logging.info("call detected!")
                             self.query = " ".join(query_words[1:])
 
+                time.sleep(0.1)
         except IOError as e:
             logging.error(f'IOError in audio stream: {e}')
         except Exception as e:
             logging.error(f'Unexpected error in audio stream: {e}')
         finally:
-            self.instream.stop_stream()
-            self.instream.close()
+            stream.stop_stream()
+            stream.close()
             self.audio.terminate()
             logging.info("Audio stream terminated.")
 
     def process_queue(self):
-        """ Process speech and audio playback queues."""
+        """Process speech and audio playback queues."""
         if not self.speech_queue.empty():
             self.speak(self.speech_queue.get())
         if not self.audio_queue.empty():
@@ -165,8 +168,7 @@ class Core:
 
     def run(self):
         """Main loop for processing user queries."""
-        self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True)
-        self.speech_thread.start()
+        self.speech_thread = threading.Thread(target=self.recognize_speech, daemon=True).start()
 
         try:
             while True:
@@ -174,7 +176,6 @@ class Core:
                 if self.called:
                     with self.lock:
                         if self.query:
-                            logging.info("processing...")
                             self.play_audio(END_WAV)
                             self.called = False
                             self.handler.handle(self.query)

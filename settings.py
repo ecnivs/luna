@@ -35,7 +35,7 @@ SAMPLING_RATE = 16000 # Audio sampling rate (Hz)
 CHUNK_SIZE = 1024 # Size of each audio chunk
 FRAMES_PER_BUFFER = 4096 # Buffer size for audio processing
 EXCEPTION_ON_OVERFLOW = False # Prevent exceptions on buffer overflow
-RATE = 16000 # Audio rate (should match SAMPLING_RATE)
+RATE = SAMPLING_RATE # Audio rate (should match SAMPLING_RATE)
 
 # -------------------------------
 # Response Handler Settings
