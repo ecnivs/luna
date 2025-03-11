@@ -25,7 +25,6 @@ class Core:
     def on_init(self):
         """Initializes the necessary components for the class instance."""
         self.lock = threading.Lock()
-        self.condition = threading.Condition()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tts = TTS(model_name=TTS_MODEL, progress_bar=False).to(self.device)
         self.shutdown_flag = threading.Event()
