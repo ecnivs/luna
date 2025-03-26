@@ -1,4 +1,3 @@
-# Blossom
 from res_handler import ResponseHandler
 from settings import *
 import pyaudio
@@ -25,6 +24,7 @@ class Core:
     def on_init(self):
         """Initializes the necessary components for the class instance."""
         self.lock = threading.Lock()
+        self.condition = threading.Condition()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tts = TTS(model_name=TTS_MODEL, progress_bar=False).to(self.device)
         self.shutdown_flag = threading.Event()
@@ -107,6 +107,11 @@ class Core:
 
         try:
             while not self.shutdown_flag.is_set():
+
+                with self.condition:
+                    while not self.audio_queue.empty():
+                        self.condition.wait()
+
                 data = stream.read(FRAMES_PER_BUFFER,
                                    exception_on_overflow=EXCEPTION_ON_OVERFLOW)
 
@@ -164,6 +169,10 @@ class Core:
         if not self.audio_queue.empty():
             if not self.is_playing:
                 self.play_audio(self.audio_queue.get())
+        elif not self.is_playing:
+            time.sleep(0.1)
+            with self.condition:
+                self.condition.notify()
 
     def run(self):
         """Main loop for processing user queries."""
