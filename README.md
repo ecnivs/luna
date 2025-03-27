@@ -13,8 +13,7 @@ This repository is dedicated to the software development of **Blossom**, a virtu
 ## Prerequisites
 - Python 3.x (Tested with Python 3.11 using pyenv)
 - Required Python libraries (listed in `requirements.txt`)
-- [Large Language Model (LLM)](https://en.wikipedia.org/wiki/Large_language_model)
-- [Ollama](https://ollama.com/)
+- [Gemini API Key](https://aistudio.google.com/app/apikey)
 - [Vosk model](https://alphacephei.com/vosk/models)
 
 ## Installation
@@ -35,20 +34,16 @@ pyenv local 3.11
 ```bash
 pip install -r requirements.txt
 ```
-5. Download an LLM:
-```bash
-ollama pull llama3.2:1b
-```
-6. Run the Software:
+5. Run the Software:
 ```bash
 python main.py
 ```
 
 ## Configuration
-1. **Vosk Model**: Download and place `vosk-model` in the directory.
-2. **Ollama**: Enable Ollama
+1. **Vosk Model**: Download and place the `vosk-model` directory in the project root.
+2. **Gemini API Key**: Store your gemini API key in a `.env` file.
 ```bash
-sudo systemctl enable ollama
+GEMINI_API_KEY=<Your API Key>
 ```
 
 ## Contributing
