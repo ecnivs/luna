@@ -11,6 +11,10 @@ import re
 import json
 import threading
 import logging
+from dotenv import load_dotenv
+
+# Load .env
+load_dotenv()
 
 # -------------------------------
 # Logging Configuration
@@ -20,12 +24,26 @@ logging.basicConfig(level=logging.DEBUG, # Set logging level (DEBUG, INFO, WARNI
                     force=True) # Override existing logging settings
 
 # -------------------------------
+# File Paths
+# -------------------------------
+VOSK_MODEL = "vosk-model"  # Path to the Vosk speech recognition model
+SPEAKER_WAV = "audio/speaker.wav"  # Path to the speaker voice sample
+START_WAV = "audio/start.wav"  # Path to start sound
+END_WAV = "audio/end.wav"  # Path to end sound
+CACHE_FILE = "json/cache.json"  # Path to the cache file for stored data
+ACTIONS_FILE = "json/actions.json"
+USER_FILE = "json/user.json"
+
+# -------------------------------
 # Assistant Settings
 # -------------------------------
 NAME = "Blossom" # Name of the assistant
 CALL_WORDS = [
     "he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"
 ] # Words that trigger the assistant
+with open(USER_FILE, 'r') as file:
+    USER_DATA = json.load(file)
+USERNAME = USER_DATA['name']
 
 # -------------------------------
 # Speech Processing Settings
@@ -43,54 +61,35 @@ RATE = SAMPLING_RATE # Audio rate (should match SAMPLING_RATE)
 EXCLUDED_PREFIXES = ("tell", "say", "find", "search", "look") # Words to ignore at first index
 MAX_LRU_SIZE = 1000 # Max size for Least Recently Used (LRU) cache
 MAX_LFU_SIZE = 5000 # Max size for Least Frequently Used (LFU) cache
+with open(ACTIONS_FILE, 'r') as file:
+    ACTIONS = json.load(file)
 
 # -------------------------------
 # LLM Configuration
 # -------------------------------
-LLM_MODEL = "llama3.2:1b"  # Language model identifier
-KEEP_ALIVE = 5  # Keep-alive time for the model in minutes
-CONTEXT = [1, 2, 3]  # Context window configuration
-NUM_KEEP = 5  # Number of context tokens to persist
-TEMPERATURE = 1.0  # Controls randomness in response generation
-TOP_K = 20  # Limits probability sampling to the top-K most likely tokens
-TOP_P = 1.0  # Nucleus sampling threshold
-MIN_P = 0.0  # Minimum probability threshold for nucleus sampling
-TYPICAL_P = 0.8  # Typical probability mass
-REPEAT_LAST_N = 33  # Number of recent tokens to consider for repetition penalty
-REPEAT_PENALTY = 1.2  # Strength of penalty for repeated tokens
-PRESENCE_PENALTY = 1.5  # Encourages introducing new words
-FREQUENCY_PENALTY = 1.0  # Reduces frequency of overused words
-MIROSTAT = 1  # Enables Mirostat sampling (adaptive temperature)
-MIROSTAT_TAU = 0.8  # Controls stability of Mirostat sampling
-MIROSTAT_ETA = 0.6  # Learning rate for Mirostat
-PENALIZE_NEWLINE = True  # Apply penalties to newline characters
-NUM_CTX = 1024  # Context length in tokens
-NUM_BATCH = 2  # Batch size for model processing
-NUM_GPU = 1  # Number of GPUs to use
-MAIN_GPU = 0  # Designated primary GPU ID
-USE_MMAP = True  # Memory-mapped file usage for model loading
-USE_MLOCK = False  # Prevents memory swapping (requires root privileges)
-NUM_THREAD = 8  # Number of CPU threads allocated for processing
-
-# -------------------------------
-# File Paths
-# -------------------------------
-VOSK_MODEL = "vosk-model"  # Path to the Vosk speech recognition model
-SPEAKER_WAV = "audio/speaker.wav"  # Path to the speaker voice sample
-START_WAV = "audio/start.wav"  # Path to start sound
-END_WAV = "audio/end.wav"  # Path to end sound
-CACHE_FILE = "cache.json"  # Path to the cache file for stored data
+ENDPOINT = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}"
+MAX_CONTEXT_SIZE = 5
 
 # -------------------------------
 # Assistant Prompt Configuration
 # -------------------------------
-PROMPT = """
+PROMPT = f"""
 Respond directly and clearly—no fluff, no detours.
-Keep a poetic, lyrical tone.
 Tell it like it is; don't sugarcoat responses.
-Readily share strong opinions.
-Be innovative and think outside the box.
-Be practical above all.
-Stay concise, get right to the point.
-Let creativity serve the truth, not distract from it.
+Share strong opinions and expressions freely.
+Be innovative, think outside the box, and stay practical.
+Stay concise—get to the point fast.
+Creativity serves truth, not distraction.
+
+Assume my name is {USERNAME}. Address me as such when relevant.
+Here are my details: {USER_DATA}
+
+When given an image, process it as direct input—what you see is what exists.
+Do not treat it like a "picture" but as immediate reality.
+Only describe details if explicitly asked.
+Assume the person in the image is me ({USERNAME}) unless context suggests otherwise.
+
+You have access to tools.
+If and only when asked to perform an action, output a JSON object with 'action', 'parameters' and 'response'(not null) instead of answering directly.
+Your available actions are {ACTIONS}
 """

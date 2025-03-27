@@ -5,6 +5,7 @@ from nltk.stem import PorterStemmer
 from llm_handler import LlmHandler
 from settings import *
 from cache_handler import LRUCache, LFUCache
+from action_handler import ActionHandler
 import hashlib
 import random
 
@@ -23,9 +24,10 @@ class ResponseHandler:
 
     def on_init(self):
         """Initializes the necessary components for the class instance."""
-        self.llm = LlmHandler()
+        self.llm = LlmHandler(self.core)
         self.cache = self.load_cache()
         self.stemmer = PorterStemmer()
+        self.action = ActionHandler(self.core)
 
     @staticmethod
     def hash_query(query):
@@ -69,10 +71,11 @@ class ResponseHandler:
                 new_response.append(chunk)
 
         new_response = ' '.join(new_response)
-        self.add_response(query, query_hash, intent, new_response)
+        self.add_response(query_hash, intent, new_response)
 
-    def add_response(self, query, query_hash, intent, response):
+    def add_response(self, query_hash, intent, response):
         """Adds a response to the LFU cache under the given intent and updates the LRU cache."""
+        response = response.replace(USERNAME, "{NAME}")
         existing_responses = self.lfu_cache.get(intent) or []
 
         if response not in existing_responses:
@@ -82,6 +85,11 @@ class ResponseHandler:
         self.lru_cache.put(query_hash, {'intent': intent})
         self.save_cache()
 
+    def do(self, data):
+        action_name = data.get('action')
+        parameters = data.get('parameters')
+        if hasattr(self.action, action_name):
+            return getattr(self.action, action_name)(**parameters)
 
     def handle(self, query):
         """
@@ -105,8 +113,10 @@ class ResponseHandler:
 
                 sentences = re.split(r'(?<=[.!?])\s+', selected_response)
                 for sentence in sentences:
+                    sentence = sentence.replace("{NAME}", USERNAME)
                     self.core.speech_queue.put(sentence)
-                threading.Thread(target=self.fetch_and_store, args=(query, query_hash, detected_intent)).start()
+                if not self.llm.cam:
+                    threading.Thread(target=self.fetch_and_store, args=(query, query_hash, detected_intent)).start()
                 return
 
         response = []
@@ -118,4 +128,5 @@ class ResponseHandler:
         response = ' '.join(response)
         intent_name = '.'.join(self.extract_key_phrases(query))
 
-        threading.Thread(target=self.add_response, args=(query, query_hash, intent_name, response)).start()
+        if not self.llm.cam:
+            threading.Thread(target=self.add_response, args=(query_hash, intent_name, response)).start()

@@ -1,0 +1,8 @@
+{
+    "name": "Vince",
+    "os": "Arch Linux",
+    "terminal": "kitty",
+    "shell": "zsh",
+    "package-manager": "pacman",
+    "default-browser": "brave"
+}

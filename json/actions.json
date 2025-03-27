@@ -1,0 +1,22 @@
+{
+    "run_cmd": {
+        "description": "Executes a shell command on the system for automation and scripting. Use 'sudo' only when necessary and explicitly mention when used.",
+        "parameters": {
+            "command": "The shell command to execute (string)."
+        }
+    },
+    "turn_on_camera": {
+        "description": "Enables the system camera, making it available for use.",
+        "parameters": {}
+    },
+    "turn_off_camera": {
+        "description": "Disables the system camera, preventing it from being accessed.",
+        "parameters": {}
+    },
+    "open_site": {
+        "description": "Opens a specified website in the system's default web browser. If the URL is a search query, ensure it follows the correct format. For YouTube searches, use 'https://www.youtube.com/results?search_query=<query>', replacing spaces with '+'.",
+        "parameters": {
+            "url": "The full URL of the website to open (string). Example: 'https://example.com' or 'https://www.youtube.com/results?search_query=phineas+and+ferb'."
+        }
+    }
+}

@@ -1,91 +1,95 @@
 # LLM Handler
-import requests
 from settings import *
+import base64
+import cv2
+import requests
+import json
 
 class LlmHandler:
-    """
-    Handles interactions with the AI model by sending requests to a local API endpoint
-    and processing streamed responses.
-    """
-    def __init__(self):
-        """ Initializes the LlmHandler with model details and a session for API requests."""
-        self.model = LLM_MODEL
+    def __init__(self, core):
+        self.core = core
+        self.prompt = f"You are an AI Assistant named {NAME}.\n{PROMPT}"
         self.session = requests.Session()
-        self.prompt = f"You are an AI Assistant named {NAME}. {PROMPT}"
+        self.context = []
+        self.cam = False
 
-    def unload_model(self):
-        """Sends a request to unload the model from memory."""
+    def is_json(self, string):
         try:
-            data = {
-                "model": self.model,
-                "keep_alive": 0
-            }
-            response = self.session.post("http://localhost:11434/api/generate", json=data)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to unload model: {e}")
+            json.loads(string)
+            return True
+        except json.JSONDecodeError:
+            return False
 
-    def get_response(self, query, LLM = LLM_MODEL):
-        """
-        Sends a query to the AI model and streams the response.
+    def get_image(self):
+        cap = cv2.VideoCapture(0)
 
-        Args:
-            query (str): The user input/query.
-            LLM (str): The AI model to use.
-        Yields:
-            str: Processed chunks of the AI model's response.
-        """
-        try:
-            data = {
-                "model": LLM,
-                "keep_alive": KEEP_ALIVE,
-                "context": CONTEXT,
-                "prompt": f"{query}",
-                "system": f"{self.prompt}",
-                "options": {
-                    "num_keep": NUM_KEEP,
-                    "temperature": TEMPERATURE,
-                    "top_k": TOP_K,
-                    "top_p": TOP_P,
-                    "min_p": MIN_P,
-                    "typical_p": TYPICAL_P,
-                    "repeat_last_n": REPEAT_LAST_N,
-                    "repeat_penalty": REPEAT_PENALTY,
-                    "presence_penalty": PRESENCE_PENALTY,
-                    "frequency_penalty": FREQUENCY_PENALTY,
-                    "mirostat": MIROSTAT,
-                    "mirostat_tau": MIROSTAT_TAU,
-                    "mirostat_eta": MIROSTAT_ETA,
-                    "penalize_newline": PENALIZE_NEWLINE,
-                    "num_ctx": NUM_CTX,
-                    "num_batch": NUM_BATCH,
-                    "num_gpu": NUM_GPU,
-                    "main_gpu": MAIN_GPU,
-                    "use_mmap": USE_MMAP,
-                    "use_mlock": USE_MLOCK,
-                    "num_thread": NUM_THREAD
+        if not cap.isOpened():
+            logging.error("Camera could not be accessed.")
+            return None
+
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            logging.error("Could not read frame.")
+
+        _, buffer = cv2.imencode('.jpg', frame)
+        return base64.b64encode(buffer).decode('utf-8')
+
+    def get_payload(self, query):
+        self.context.append(f"User: {query}")
+
+        if len(self.context) > MAX_CONTEXT_SIZE:
+            self.context.pop(0)
+
+        context_text = "\n".join(self.context)
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": self.prompt},
+                        {"text": context_text}
+                    ]
                 }
-            }
-            response = self.session.post(
-                "http://localhost:11434/api/generate",
-                json=data,
-                stream=True
+            ]
+        }
+
+        if not self.cam:
+            image_data = None
+        else:
+            image_data = self.get_image()
+
+        if image_data:
+            payload["contents"][0]["parts"].append(
+                {"inline_data": {"mime_type": "image/jpeg", "data": image_data}}
             )
 
-            buffer = []
-            for chunk in response.iter_content(chunk_size=512):
-                chunk_str = chunk.decode("utf-8")
-                try:
-                    chunk_json = json.loads(chunk_str)
-                    buffer.append(chunk_json.get("response", ""))
-                except json.JSONDecodeError:
-                    continue
-                if re.search(r'[.!?]$', ''.join(buffer)):
-                    chunk_str = ' '.join(''.join(buffer).split())
-                    buffer = []
-                    yield chunk_str
+        return payload
 
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Request to API Failed: {e}")
-        except Exception as e:
-            logging.exception(f"Unexpected error: {e}")
+
+    def get_response(self, query):
+        response = self.session.post(ENDPOINT, json=self.get_payload(query))
+
+        if response.status_code == 200:
+            response_text = str(response.json()["candidates"][0]["content"]["parts"][0]["text"])
+        else:
+            response_text = str("Error:", response.text)
+
+        self.context.append(f"{NAME}: {response_text}")
+        if len(self.context) > MAX_CONTEXT_SIZE:
+            self.context.pop(0)
+
+        start = response_text.find('{')
+        end = response_text.rfind('}')
+
+        if start != -1 and end != -1 and start < end:
+            json_part = response_text[start:end+1]
+            logging.info(json_part)
+            data = json.loads(json_part)
+            response_text = data['response']
+            self.core.handler.do(data)
+
+        sentences = re.split(r'(?<=[.!?])\s+', response_text.strip())
+        for sentence in sentences:
+            yield sentence

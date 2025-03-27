@@ -195,7 +195,6 @@ class Core:
             self.shutdown_flag.set()
             self.handler.save_cache()
             self.handler.llm.session.close()
-            self.handler.llm.unload_model()
 
             files = glob.glob("*_temp.wav")
             for file in files:
