@@ -1,18 +1,20 @@
 from settings import *
 import webbrowser
+import subprocess
 
 class ActionHandler:
     def __init__(self, core):
         self.core = core
 
-    def run_cmd(self, command):
-        os.system(command)
+    def run_cmd(self, command, shell=True, capture_output=True, text=True, check=True):
+        try:
+            result = subprocess.run(command, shell=shell, capture_output=capture_output, text=text, check=check)
+            logging.info(result.stdout)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error: {e}")
 
-    def turn_on_camera(self):
-        self.core.handler.llm.cam = True
+    def toggle_camera(self, state):
+        self.core.handler.llm.cam = state
 
-    def turn_off_camera(self):
-        self.core.handler.llm.cam = False
-
-    def open_site(self, url):
-        webbrowser.open(url)
+    def open_site(self, url, new=0, autoraise=True):
+        webbrowser.open(url, new=new, autoraise=autoraise)

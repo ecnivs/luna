@@ -99,8 +99,8 @@ class Core:
                         frames_per_buffer = FRAMES_PER_BUFFER)
         stream.start_stream()
 
-        # load model into memory
-        self.speech_queue.put(" ".join(self.handler.llm.get_response(f"Hey {self.name}")))
+        # greet
+        self.handler.process_response(self.handler.llm.get_response(f"Hey {self.name}"))
 
         logging.info("Listening...")
         logging.info(f"Say 'Hey {self.name}'")

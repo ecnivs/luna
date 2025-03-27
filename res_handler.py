@@ -65,13 +65,8 @@ class ResponseHandler:
 
     def fetch_and_store(self, query, query_hash, intent):
         """Fetches a fresh response from the LLM and stores it in the cache."""
-        new_response = []
-        for chunk in self.llm.get_response(query):
-            if chunk.strip():
-                new_response.append(chunk)
-
-        new_response = ' '.join(new_response)
-        self.add_response(query_hash, intent, new_response)
+        response = self.llm.get_response(query)
+        self.add_response(query_hash, intent, response)
 
     def add_response(self, query_hash, intent, response):
         """Adds a response to the LFU cache under the given intent and updates the LRU cache."""
@@ -90,6 +85,23 @@ class ResponseHandler:
         parameters = data.get('parameters')
         if hasattr(self.action, action_name):
             return getattr(self.action, action_name)(**parameters)
+
+    def process_response(self, response_text):
+        response_text = response_text.replace("{NAME}", USERNAME)
+        start = response_text.find('{')
+        end = response_text.rfind('}')
+
+        if start != -1 and end != -1 and start < end:
+            json_part = response_text[start:end+1]
+            logging.info(json_part)
+            data = json.loads(json_part)
+            response_text = data['response']
+            self.do(data)
+
+        if response_text:
+            sentences = re.split(r'(?<=[.!?])\s+', response_text.strip())
+            for sentence in sentences:
+                self.core.speech_queue.put(sentence)
 
     def handle(self, query):
         """
@@ -110,22 +122,13 @@ class ResponseHandler:
                 possible_responses = [res for res in cached_responses if res != last_used] if len(cached_responses) > 1 else cached_responses
                 selected_response = random.choice(possible_responses)
                 self.lru_cache.put('last_used_response', selected_response)
-
-                sentences = re.split(r'(?<=[.!?])\s+', selected_response)
-                for sentence in sentences:
-                    sentence = sentence.replace("{NAME}", USERNAME)
-                    self.core.speech_queue.put(sentence)
+                self.process_response(selected_response)
                 if not self.llm.cam:
                     threading.Thread(target=self.fetch_and_store, args=(query, query_hash, detected_intent)).start()
                 return
 
-        response = []
-        for chunk in self.llm.get_response(query):
-            if chunk.strip():
-                self.core.speech_queue.put(chunk)
-                response.append(chunk)
-
-        response = ' '.join(response)
+        response = self.llm.get_response(query)
+        self.process_response(response)
         intent_name = '.'.join(self.extract_key_phrases(query))
 
         if not self.llm.cam:

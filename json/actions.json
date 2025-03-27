@@ -1,22 +1,57 @@
 {
     "run_cmd": {
-        "description": "Executes a shell command on the system for automation and scripting. Use 'sudo' only when necessary and explicitly mention when used.",
+        "description": "Executes a shell command on the system for automation and running apps. Use 'sudo' only when necessary and explicitly mention when used.",
         "parameters": {
-            "command": "The shell command to execute (string)."
+            "command": {
+                "type": "string",
+                "description": "The shell command to execute (string)."
+            },
+            "shell": {
+                "type": "boolean",
+                "default": true,
+                "description": "If true, executes the command through the shell, allowing features like pipes and environment variables."
+            },
+            "capture_output": {
+                "type": "boolean",
+                "default": true,
+                "description": "If true, captures the command’s output instead of printing it directly."
+            },
+            "text": {
+                "type": "boolean",
+                "default": true,
+                "description": "If true, decodes the output as a string instead of bytes."
+            },
+            "check": {
+                "type": "boolean",
+                "default": true,
+                "description": "If true, raises an error when the command fails."
+            }
         }
     },
-    "turn_on_camera": {
-        "description": "Enables the system camera, making it available for use.",
-        "parameters": {}
-    },
-    "turn_off_camera": {
-        "description": "Disables the system camera, preventing it from being accessed.",
-        "parameters": {}
+    "toggle_camera": {
+        "description": "Toggles the system camera on or off based on the provided boolean value.",
+        "parameters": {
+            "state": {
+                "type": "boolean",
+                "description": "Set to true to enable the camera, false to disable it."
+            }
+        }
     },
     "open_site": {
         "description": "Opens a specified website in the system's default web browser. If the URL is a search query, ensure it follows the correct format. For YouTube searches, use 'https://www.youtube.com/results?search_query=<query>', replacing spaces with '+'.",
         "parameters": {
-            "url": "The full URL of the website to open (string). Example: 'https://example.com' or 'https://www.youtube.com/results?search_query=phineas+and+ferb'."
+            "url": {
+                "type": "string",
+                "description": "The full URL of the website to open. Example: 'https://example.com' or 'https://www.youtube.com/results?search_query=phineas+and+ferb'."
+            },
+            "new": {
+                "type": "integer",
+                "description": "Determines how the URL is opened: 0 = same window, 1 = new window, 2 = new tab."
+            },
+            "autoraise": {
+                "type": "boolean",
+                "description": "Whether to bring the browser window to the front (true) or not (false)."
+            }
         }
     }
 }

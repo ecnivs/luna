@@ -79,17 +79,4 @@ class LlmHandler:
         self.context.append(f"{NAME}: {response_text}")
         if len(self.context) > MAX_CONTEXT_SIZE:
             self.context.pop(0)
-
-        start = response_text.find('{')
-        end = response_text.rfind('}')
-
-        if start != -1 and end != -1 and start < end:
-            json_part = response_text[start:end+1]
-            logging.info(json_part)
-            data = json.loads(json_part)
-            response_text = data['response']
-            self.core.handler.do(data)
-
-        sentences = re.split(r'(?<=[.!?])\s+', response_text.strip())
-        for sentence in sentences:
-            yield sentence
+        return response_text
