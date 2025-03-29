@@ -18,3 +18,7 @@ class ActionHandler:
 
     def open_site(self, url, new=0, autoraise=True):
         webbrowser.open(url, new=new, autoraise=autoraise)
+
+    def take_picture(self):
+        response_text = self.core.handler.llm.get_response("", cam = True)
+        self.core.handler.process_response(response_text)

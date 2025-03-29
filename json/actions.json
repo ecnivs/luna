@@ -53,5 +53,15 @@
                 "description": "Whether to bring the browser window to the front (true) or not (false)."
             }
         }
+    },
+    "take_picture": {
+        "description": "Captures an image using the system's camera and returns the image data to the assistant. Call this action whenever an image is needed to answer the user's request. Example: 'How do i look?'",
+        "parameters": {},
+        "returns": {
+            "image_data": {
+                "type": "string",
+                "description": "The captured image encoded as a base64 string. Once this image is received, respond accordingly."
+            }
+        }
     }
 }

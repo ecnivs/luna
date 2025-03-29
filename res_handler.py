@@ -95,7 +95,10 @@ class ResponseHandler:
             json_part = response_text[start:end+1]
             logging.info(json_part)
             data = json.loads(json_part)
-            response_text = data['response']
+            try:
+                response_text = data['response']
+            except:
+                response_text = None
             self.do(data)
 
         if response_text:
@@ -113,7 +116,7 @@ class ResponseHandler:
         query_hash = self.hash_query(query.lower())
         cached_data = self.lru_cache.get(query_hash) or self.lfu_cache.get(query_hash)
 
-        if cached_data:
+        if cached_data and not self.llm.cam:
             detected_intent = cached_data['intent']
             cached_responses = self.lfu_cache.get(detected_intent) or []
 
@@ -123,13 +126,21 @@ class ResponseHandler:
                 selected_response = random.choice(possible_responses)
                 self.lru_cache.put('last_used_response', selected_response)
                 self.process_response(selected_response)
-                if not self.llm.cam:
-                    threading.Thread(target=self.fetch_and_store, args=(query, query_hash, detected_intent)).start()
+                threading.Thread(target=self.fetch_and_store, args=(query, query_hash, detected_intent)).start()
                 return
 
         response = self.llm.get_response(query)
         self.process_response(response)
         intent_name = '.'.join(self.extract_key_phrases(query))
+
+        start = response.find('{')
+        end = response.rfind('}')
+
+        if start != -1 and end != -1 and start < end:
+            json_part = response[start:end+1]
+            data = json.loads(json_part)
+            if data['action'] == "take_picture":
+                return
 
         if not self.llm.cam:
             threading.Thread(target=self.add_response, args=(query_hash, intent_name, response)).start()

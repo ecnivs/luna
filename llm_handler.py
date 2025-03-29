@@ -36,7 +36,7 @@ class LlmHandler:
         _, buffer = cv2.imencode('.jpg', frame)
         return base64.b64encode(buffer).decode('utf-8')
 
-    def get_payload(self, query):
+    def get_payload(self, query, cam = False):
         self.context.append(f"User: {query}")
 
         if len(self.context) > MAX_CONTEXT_SIZE:
@@ -55,7 +55,7 @@ class LlmHandler:
             ]
         }
 
-        if not self.cam:
+        if not self.cam and not cam:
             image_data = None
         else:
             image_data = self.get_image()
@@ -68,8 +68,8 @@ class LlmHandler:
         return payload
 
 
-    def get_response(self, query):
-        response = self.session.post(ENDPOINT, json=self.get_payload(query))
+    def get_response(self, query, cam = False):
+        response = self.session.post(ENDPOINT, json=self.get_payload(query, cam = cam))
 
         if response.status_code == 200:
             response_text = str(response.json()["candidates"][0]["content"]["parts"][0]["text"])

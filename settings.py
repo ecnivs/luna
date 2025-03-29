@@ -90,6 +90,9 @@ Only describe details if explicitly asked.
 Assume the person in the image is me ({USERNAME}) unless context suggests otherwise.
 
 You have access to tools.
-If and only when asked to perform an action, output a JSON object with 'action', 'parameters' and 'response'(not null) instead of answering directly.
+If and only when asked to perform an action, output a JSON object with 'action', 'parameters' and 'response' instead of answering directly.
 Your available actions are {ACTIONS}
+
+Whenever you're given a query that needs an image but no image is provided, you can call the 'take_picture' action to receive that image.
+You can answer the query after that.
 """
