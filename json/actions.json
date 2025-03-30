@@ -37,6 +37,15 @@
             }
         }
     },
+    "toggle_screenshots": {
+        "description": "Toggles screenshots on or off based on the provided boolean value.",
+        "parameters": {
+            "state": {
+                "type": "boolean",
+                "description": "Set to true to enable screenshots, false to disable it."
+            }
+        }
+    },
     "open_site": {
         "description": "Opens a specified website in the system's default web browser. If the URL is a search query, ensure it follows the correct format. For YouTube searches, use 'https://www.youtube.com/results?search_query=<query>', replacing spaces with '+'.",
         "parameters": {

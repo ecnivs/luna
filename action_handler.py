@@ -16,6 +16,9 @@ class ActionHandler:
     def toggle_camera(self, state):
         self.core.handler.llm.cam = state
 
+    def toggle_screenshots(self, state):
+        self.core.handler.llm.ss = state
+
     def open_site(self, url, new=0, autoraise=True):
         webbrowser.open(url, new=new, autoraise=autoraise)
 
