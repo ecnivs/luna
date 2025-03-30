@@ -1,6 +1,5 @@
 from settings import *
 import webbrowser
-import subprocess
 
 class ActionHandler:
     def __init__(self, core):
@@ -10,6 +9,7 @@ class ActionHandler:
         try:
             result = subprocess.run(command, shell=shell, capture_output=capture_output, text=text, check=check)
             logging.info(result.stdout)
+            return result
         except subprocess.CalledProcessError as e:
             logging.error(f"Error: {e}")
 
@@ -21,4 +21,8 @@ class ActionHandler:
 
     def take_picture(self):
         response_text = self.core.handler.llm.get_response("", cam = True)
+        self.core.handler.process_response(response_text)
+
+    def take_screenshot(self):
+        response_text = self.core.handler.llm.get_response("", ss = True)
         self.core.handler.process_response(response_text)

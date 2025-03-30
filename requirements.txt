@@ -5,3 +5,7 @@ torch
 pyaudio
 vosk
 TTS
+pillow
+webbrowser
+python-dotenv
+opencv-python

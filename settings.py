@@ -8,10 +8,13 @@ Modify these values based on system requirements and desired behavior.
 """
 import os
 import re
+import base64
+import requests
 import json
 import threading
 import logging
 from dotenv import load_dotenv
+import subprocess
 
 # Load .env
 load_dotenv()
@@ -67,7 +70,8 @@ with open(ACTIONS_FILE, 'r') as file:
 # -------------------------------
 # LLM Configuration
 # -------------------------------
-ENDPOINT = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}"
+GEMINI_MODEL = "gemini-2.0-flash"
+ENDPOINT = f"https://generativelanguage.googleapis.com/v1/models/{GEMINI_MODEL}:generateContent?key={os.getenv('GEMINI_API_KEY')}"
 MAX_CONTEXT_SIZE = 5
 
 # -------------------------------
@@ -93,6 +97,7 @@ You have access to tools.
 If and only when asked to perform an action, output a JSON object with 'action', 'parameters' and 'response' instead of answering directly.
 Your available actions are {ACTIONS}
 
-Whenever you're given a query that needs an image but no image is provided, you can call the 'take_picture' action to receive that image.
+Whenever you're given a query that needs an image but no image is provided, you may call the 'take_picture' action to receive that image.
+Similarly, If out of context you may call 'take_screenshot' action to receive a picture of the user's screen.
 You can answer the query after that.
 """

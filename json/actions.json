@@ -60,7 +60,17 @@
         "returns": {
             "image_data": {
                 "type": "string",
-                "description": "The captured image encoded as a base64 string. Once this image is received, respond accordingly."
+                "description": "The captured image is encoded as a base64 string. Once this image is received, respond accordingly."
+            }
+        }
+    },
+    "take_screenshot": {
+        "description": "Captures a screenshot and returns the image data to the assistant. Call this action whenever an image is needed to answer the user's request. Example: 'What's on my screen?'",
+        "parameters": {},
+        "returns": {
+            "image_data": {
+                "type": "string",
+                "description": "The captured screenshot is encoded as base64 string. Once this image is received, respond accordingly."
             }
         }
     }
