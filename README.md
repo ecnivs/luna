@@ -25,7 +25,7 @@ git clone https://github.com/ecnivs/Blossom.git
 ```bash
 cd Blossom
 ```
-3. Set up Python with pyenv:
+3. Set up Python with `pyenv`:
 ```bash
 pyenv install 3.11
 pyenv local 3.11
