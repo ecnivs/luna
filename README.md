@@ -11,7 +11,7 @@
 This repository is dedicated to the software development of **Blossom**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
 
 ## Prerequisites
-- Python 3.x (Tested with Python 3.11 using pyenv)
+- Python 3.x (Tested with Python 3.11 using `pyenv`)
 - Required Python libraries (listed in `requirements.txt`)
 - [Gemini API Key](https://aistudio.google.com/app/apikey)
 - [Vosk model](https://alphacephei.com/vosk/models)
