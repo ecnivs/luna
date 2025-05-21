@@ -10,43 +10,61 @@
 ## Overview
 This repository is dedicated to the software development of **Blossom**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
 
-## Prerequisites
+## 🛠️ Prerequisites
 - Python 3.x (Tested with Python 3.11 using `pyenv`)
 - Required Python libraries (listed in `requirements.txt`)
-- [Gemini API Key](https://aistudio.google.com/app/apikey)
-- [Vosk model](https://alphacephei.com/vosk/models)
 
-## Installation
-1. Clone the repository:
+#### Environment Variables
+Crank uses a .env file to load sensitive keys and config values. Make sure to create a .env file in the root directory containing your API keys, for example:
+```ini
+GEMINI_API_KEY=your_api_key_here
+```
+
+#### Vosk Model Setup
+Crank uses [Vosk](https://alphacephei.com/vosk/) for offline speech recognition. To set it up:
+1. **Download an English model** from the official [Vosk models](https://alphacephei.com/vosk/models) page.
+2. Recommended model: [vosk-model-small-en-us-0.15](https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip) (~50MB)
+3. Extract the model:
+```bash
+unzip vosk-model-small-en-us-0.15.zip
+```
+4. Rename the extracted folder to `vosk-model`:
+```bash
+mv vosk-model-small-en-us-0.15 vosk-model
+```
+5. **Move it to the project root** so your directory structure looks like:
+```
+crank/
+├── main.py
+├── requirements.txt
+├── .env
+├── vosk-model/
+│   ├── conf
+│   ├── ... etc
+├── other_files_or_dirs/
+```
+
+## ⚙️ Installation
+1. **Clone the repository**
 ```bash
 git clone https://github.com/ecnivs/Blossom.git
-```
-2. Navigate to the project directory:
-```bash
 cd Blossom
 ```
-3. Set up Python with `pyenv`:
+2. **Set up Python with `pyenv`**
 ```bash
 pyenv install 3.11
 pyenv local 3.11
 ```
-4. Install dependencies:
+4. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
-5. Run the Software:
+5. **Run the Software**
 ```bash
 python main.py
 ```
 
-## Configuration
-1. **Vosk Model**: Download and place the `vosk-model` directory in the project root.
-2. **Gemini API Key**: Store your gemini API key in a `.env` file.
-```bash
-GEMINI_API_KEY=<Your API Key>
-```
-
-## Contributing
+## 🙌 Contributing
 We appreciate any feedback or code reviews! Feel free to:
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
