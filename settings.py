@@ -1,7 +1,7 @@
 """
-Blossom Configuration File
+Configuration File
 
-This file contains all configurable settings for Blossom, including
+This file contains all configurable settings, including
 logging, speech processing, response handling, and LLM configurations.
 
 Modify these values based on system requirements and desired behavior.
@@ -40,7 +40,7 @@ USER_FILE = "json/user.json"
 # -------------------------------
 # Assistant Settings
 # -------------------------------
-NAME = "Blossom" # Name of the assistant
+NAME = "Luna" # Name of the assistant
 CALL_WORDS = [
     "he", "hey", "okay", "hi", "hello", "yo", "listen", "attention", "are you there"
 ] # Words that trigger the assistant
