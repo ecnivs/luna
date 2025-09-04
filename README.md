@@ -4,8 +4,8 @@
 ![swappy-20250213-101131](https://github.com/user-attachments/assets/d5bffa73-92b5-48e2-8e53-69e0f54f6dcd)
 
 ## 🏆 Recognition
-> Secured **All India 4th Place** in **SmashHack '24** <br>
-> Secured **All India 4th Place** in **Code Sangram '25**
+> Secured **All India Top 10** in **SmashHack '24** <br>
+> Secured **All India Top 10** in **Code Sangram '25**
 
 ## Overview
 This repository is dedicated to the software development of **Luna**, a virtual assistant. The project aims to deliver a seamless and responsive user experience.
