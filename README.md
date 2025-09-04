@@ -1,7 +1,21 @@
-# Luna
-> SEAMLESS.INTELLIGENT.SECURE - Your Virtual Assistant
+<h1 align="center">Luna</h1>
+<p align="center"><em>SEAMLESS.INTELLIGENT.SECURE - Your Virtual Assistant</em></p>
 
 ![swappy-20250213-101131](https://github.com/user-attachments/assets/d5bffa73-92b5-48e2-8e53-69e0f54f6dcd)
+
+<p align="center">
+  <a href="https://github.com/ecnivs/luna/stargazers">
+    <img src="https://img.shields.io/github/stars/ecnivs/luna?style=flat-square">
+  </a>
+  <a href="https://github.com/ecnivs/luna/issues">
+    <img src="https://img.shields.io/github/issues/ecnivs/luna?style=flat-square">
+  </a>
+  <a href="https://github.com/ecnivs/luna/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-Custom-blue?style=flat-square">
+  </a>
+  <img src="https://img.shields.io/badge/python-3.13%2B-blue?style=flat-square">
+  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-informational?style=flat-square">
+</p>
 
 ## 🏆 Recognition
 > Secured **All India Top 10** in **SmashHack '24** <br>
@@ -47,7 +61,7 @@ crank/
 ## ⚙️ Installation
 1. **Clone the repository**
 ```bash
-git clone https://github.com/ecnivs/Blossom.git
+git clone https://github.com/ecnivs/Luna.git
 cd Blossom
 ```
 2. **Set up Python with `pyenv`**
