@@ -10,8 +10,8 @@
   <a href="https://github.com/ecnivs/luna/issues">
     <img src="https://img.shields.io/github/issues/ecnivs/luna?style=flat-square">
   </a>
-  <a href="https://github.com/ecnivs/luna/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/license-Custom-blue?style=flat-square">
+  <a href="https://github.com/ecnivs/luna/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/ecnivs/luna?style=flat-square">
   </a>
   <img src="https://img.shields.io/badge/python-3.13%2B-blue?style=flat-square">
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-informational?style=flat-square">
