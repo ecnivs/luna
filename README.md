@@ -1,7 +1,11 @@
 <h1 align="center">Luna</h1>
 <p align="center"><em>SEAMLESS.INTELLIGENT.SECURE - Your Virtual Assistant</em></p>
 
+<div align="center">
+
 ![swappy-20250213-101131](https://github.com/user-attachments/assets/d5bffa73-92b5-48e2-8e53-69e0f54f6dcd)
+
+</div>
 
 <p align="center">
   <a href="https://github.com/ecnivs/luna/stargazers">
